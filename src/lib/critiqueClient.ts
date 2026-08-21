@@ -14,7 +14,7 @@ export const FALLBACK_CRITIQUE: Critique = {
 
 export async function runCheck(input: { task: string; output: string; focus?: string }): Promise<Critique> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 26000);
+  const timeout = setTimeout(() => controller.abort(), 48000);
   try {
     const res = await fetch("/api/critique", {
       method: "POST",
