@@ -5,6 +5,9 @@ import Welcome from "@/components/screens/Welcome";
 import Role from "@/components/screens/Role";
 import Comfort from "@/components/screens/Comfort";
 import Focus from "@/components/screens/Focus";
+import Pace from "@/components/screens/Pace";
+import Roadmap from "@/components/screens/Roadmap";
+import Fork from "@/components/screens/Fork";
 
 function Funnel() {
   const { state } = useFunnel();
@@ -14,6 +17,9 @@ function Funnel() {
       case "role": return <Role />;
       case "comfort": return <Comfort />;
       case "focus": return <Focus />;
+      case "pace": return <Pace />;
+      case "roadmap": return <Roadmap />;
+      case "fork": return <Fork />;
       default:
         return (
           <div className="pad screen">
