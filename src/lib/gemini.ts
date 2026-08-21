@@ -52,11 +52,11 @@ export async function critique(task: string, output: string, focus?: string): Pr
         parts: [{ text: `TASK the user asked AI to do:\n${task}${focusLine}\n\nAI OUTPUT:\n${output}\n\nJudge it against the rubric.` }],
       },
     ],
-    generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.2 },
+    generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.2, thinkingConfig: { thinkingLevel: "low" } },
   };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
+  const timeout = setTimeout(() => controller.abort(), 55000);
   try {
     const res = await fetch(url, {
       method: "POST",

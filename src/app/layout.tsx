@@ -1,19 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SpotCheck — trust your AI's numbers",
-  description: "A 2-minute daily check for finance professionals who use AI.",
+  title: "SpotCheck — Trust what AI does with your numbers",
+  description: "A guest-first Gemini coach that gets finance pros good at trusting and fixing their AI-assisted work.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = { width: "device-width", initialScale: 1 };
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

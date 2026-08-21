@@ -32,14 +32,21 @@ create table if not exists public.signals (
   created_at timestamptz not null default now()
 );
 
--- MVP: allow the anon public key to insert (and read back its own data)
+-- MVP: allow the anon public key to insert (and upsert its own profile)
 alter table public.profiles enable row level security;
 alter table public.checks   enable row level security;
 alter table public.signals  enable row level security;
 
+-- Idempotent cleanup so re-running this file removes anon SELECT from a live DB.
+drop policy if exists "anon read profiles" on public.profiles;
+drop policy if exists "anon read checks" on public.checks;
+
+-- Anon SELECT intentionally omitted: this key is public, the funnel never reads these tables back, and there's no per-user JWT to scope rows by.
 create policy "anon insert profiles" on public.profiles for insert to anon with check (true);
 create policy "anon upsert profiles" on public.profiles for update to anon using (true) with check (true);
-create policy "anon read profiles"   on public.profiles for select to anon using (true);
 create policy "anon insert checks"   on public.checks   for insert to anon with check (true);
-create policy "anon read checks"     on public.checks   for select to anon using (true);
 create policy "anon insert signals"  on public.signals  for insert to anon with check (true);
+
+-- V3 Phase 1: onboarding pace + tenure
+alter table public.profiles add column if not exists tenure text;
+alter table public.profiles add column if not exists pace   text;
