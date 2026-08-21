@@ -11,6 +11,7 @@ import Fork from "@/components/screens/Fork";
 import PathAUpload from "@/components/screens/PathAUpload";
 import PathAFindings from "@/components/screens/PathAFindings";
 import PathAConcepts from "@/components/screens/PathAConcepts";
+import Test from "@/components/screens/Test";
 
 function Funnel() {
   const { state } = useFunnel();
@@ -26,6 +27,7 @@ function Funnel() {
       case "a_upload": return <PathAUpload />;
       case "a_findings": return <PathAFindings />;
       case "a_concepts": return <PathAConcepts />;
+      case "test": return <Test />;
       default:
         return (
           <div className="pad screen">
