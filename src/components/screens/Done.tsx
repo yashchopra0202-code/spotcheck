@@ -50,7 +50,7 @@ export default function Done() {
         <div className="badge locked"><div className="ic">🔒</div><div className="nm">7-day run</div></div>
       </div>
 
-      <div className="prog" style={{ marginTop: 12 }}><div className="f" style={{ width: `${fill}%` }} /></div>
+      <div className="prog" style={{ marginTop: 12 }}><div className="f" style={{ transform: `scaleX(${fill / 100})` }} /></div>
       <p className="note">Day 1 of {days} · {pct}% to &ldquo;AI-ready analyst.&rdquo;</p>
 
       <button className="cta" disabled style={{ marginTop: 16 }}>Your daily coach lands next</button>
