@@ -33,6 +33,8 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
   // Hydrate from localStorage + set up analytics/anon id once.
   useEffect(() => {
     initAnalytics();
+    // Client-only anon id from localStorage (unavailable during SSR), so this mount-time setState is intentional hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUserId(getUserId());
     try {
       const raw = localStorage.getItem(LS_KEY);
