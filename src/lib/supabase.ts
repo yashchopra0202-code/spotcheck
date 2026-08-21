@@ -37,10 +37,23 @@ export type ProfileRow = {
   email?: string | null;
 };
 
+// Writes go through a SECURITY DEFINER function (see supabase-setup.sql), not a
+// direct table upsert: an INSERT ... ON CONFLICT DO UPDATE needs read-visibility
+// of the row, which anon deliberately does NOT have (that would expose every
+// user's email). The function runs with owner privileges and bypasses RLS; anon
+// can only call it, never read the table.
 export async function saveProfile(row: ProfileRow) {
   if (!supabase) return;
   try {
-    await supabase.from("profiles").upsert(row, { onConflict: "user_id" });
+    await supabase.rpc("upsert_profile", {
+      p_user_id: row.user_id,
+      p_role: row.role ?? null,
+      p_tenure: row.tenure ?? null,
+      p_ai_comfort: row.ai_comfort ?? null,
+      p_focus: row.focus ?? null,
+      p_pace: row.pace ?? null,
+      p_email: row.email ?? null,
+    });
   } catch {
     // never let persistence break the funnel
   }
