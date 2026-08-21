@@ -1,9 +1,15 @@
 "use client";
+import { useEffect } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
 import { track } from "@/lib/analytics";
 
 export default function Welcome() {
   const { go } = useFunnel();
+
+  useEffect(() => {
+    track("welcome_viewed");
+  }, []);
+
   return (
     <div className="pad screen">
       <div className="brandlogo"><span className="mk" /><span className="wm">Spot<span>Check</span></span></div>

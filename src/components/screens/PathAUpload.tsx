@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { CHECK_OPTIONS } from "@/lib/funnel";
+import { CHECK_OPTIONS, type TaskType } from "@/lib/funnel";
 import { runCheck } from "@/lib/critiqueClient";
 import { track } from "@/lib/analytics";
 import { saveCheck } from "@/lib/supabase";
@@ -11,7 +11,7 @@ export default function PathAUpload() {
   const [paste, setPaste] = useState("");
   const [fileName, setFileName] = useState("");
   const [checkOpt, setCheckOpt] = useState(CHECK_OPTIONS[0]);
-  const [taskType, setTaskType] = useState<"critical" | "scratch">("critical");
+  const [taskType, setTaskType] = useState<TaskType>("critical");
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 

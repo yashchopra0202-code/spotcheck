@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { FunnelState, Step, initialState } from "@/lib/funnel";
+import { FunnelState, Step, TaskType, initialState } from "@/lib/funnel";
 import { getUserId, initAnalytics, track } from "@/lib/analytics";
 import { saveProfile } from "@/lib/supabase";
 import type { Critique } from "@/lib/gemini";
@@ -11,7 +11,7 @@ type Ctx = {
   set: (p: Partial<FunnelState>) => void;
   go: (step: Step) => void;
   userId: string;
-  check: { task: string; paste: string; taskType: "critical" | "scratch"; result: Critique } | null;
+  check: { task: string; paste: string; taskType: TaskType; result: Critique } | null;
   setCheck: (c: Ctx["check"]) => void;
 };
 
@@ -27,7 +27,7 @@ export function useFunnel(): Ctx {
 export default function FunnelProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<FunnelState>(initialState);
   const [userId, setUserId] = useState("");
-  const [check, setCheck] = useState<{ task: string; paste: string; taskType: "critical" | "scratch"; result: Critique } | null>(null);
+  const [check, setCheck] = useState<{ task: string; paste: string; taskType: TaskType; result: Critique } | null>(null);
   const hydrated = useRef(false);
 
   // Hydrate from localStorage + set up analytics/anon id once.
@@ -43,7 +43,6 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
       /* ignore */
     }
     hydrated.current = true;
-    track("welcome_viewed");
   }, []);
 
   // Persist funnel state after hydration.
