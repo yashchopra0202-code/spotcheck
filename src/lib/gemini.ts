@@ -56,7 +56,7 @@ export async function critique(task: string, output: string, focus?: string): Pr
   };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45000);
+  const timeout = setTimeout(() => controller.abort(), 55000);
   try {
     const res = await fetch(url, {
       method: "POST",
