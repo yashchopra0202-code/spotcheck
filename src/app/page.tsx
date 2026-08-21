@@ -8,6 +8,7 @@ import Focus from "@/components/screens/Focus";
 import Pace from "@/components/screens/Pace";
 import Roadmap from "@/components/screens/Roadmap";
 import Fork from "@/components/screens/Fork";
+import PathAUpload from "@/components/screens/PathAUpload";
 
 function Funnel() {
   const { state } = useFunnel();
@@ -20,6 +21,7 @@ function Funnel() {
       case "pace": return <Pace />;
       case "roadmap": return <Roadmap />;
       case "fork": return <Fork />;
+      case "a_upload": return <PathAUpload />;
       default:
         return (
           <div className="pad screen">

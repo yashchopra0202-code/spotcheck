@@ -4,12 +4,15 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { FunnelState, Step, initialState } from "@/lib/funnel";
 import { getUserId, initAnalytics, track } from "@/lib/analytics";
 import { saveProfile } from "@/lib/supabase";
+import type { Critique } from "@/lib/gemini";
 
 type Ctx = {
   state: FunnelState;
   set: (p: Partial<FunnelState>) => void;
   go: (step: Step) => void;
   userId: string;
+  check: { task: string; paste: string; taskType: "critical" | "scratch"; result: Critique } | null;
+  setCheck: (c: Ctx["check"]) => void;
 };
 
 const FunnelCtx = createContext<Ctx | null>(null);
@@ -24,6 +27,7 @@ export function useFunnel(): Ctx {
 export default function FunnelProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<FunnelState>(initialState);
   const [userId, setUserId] = useState("");
+  const [check, setCheck] = useState<{ task: string; paste: string; taskType: "critical" | "scratch"; result: Critique } | null>(null);
   const hydrated = useRef(false);
 
   // Hydrate from localStorage + set up analytics/anon id once.
@@ -70,7 +74,7 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
   };
 
   return (
-    <FunnelCtx.Provider value={{ state, set, go, userId }}>
+    <FunnelCtx.Provider value={{ state, set, go, userId, check, setCheck }}>
       {children}
     </FunnelCtx.Provider>
   );
