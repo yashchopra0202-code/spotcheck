@@ -16,6 +16,35 @@ body{font-family:-apple-system,"SF Pro Text",system-ui,Segoe UI,sans-serif;-webk
 .screen{animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
 
+/* Web layout: on wider screens the funnel becomes a centered, elevated card on
+   a soft backdrop (the right desktop form for a step-by-step flow), while
+   staying full-bleed on phones. Identity and screens are unchanged. */
+@media (min-width:640px){
+  .app{
+    align-items:center;
+    padding:32px 20px;
+    background:
+      radial-gradient(1100px 620px at 50% -12%, color-mix(in srgb, var(--brand) 7%, var(--wash)), var(--wash) 62%),
+      var(--wash);
+  }
+  .appcol{
+    max-width:480px;
+    min-height:0;
+    height:min(772px, calc(100dvh - 64px));
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:26px;
+    box-shadow:0 44px 90px -40px rgba(15,23,41,.32), 0 6px 16px -8px rgba(15,23,41,.12);
+    overflow:hidden;
+  }
+  .pad{
+    min-height:100%;
+    height:100%;
+    overflow-y:auto;
+    padding:44px 38px 32px;
+  }
+}
+
 .brandlogo{display:flex;align-items:center;gap:9px}
 .brandlogo .mk{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#0a5f4e);position:relative;box-shadow:0 5px 14px -5px var(--brand)}
 .brandlogo .mk::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}
