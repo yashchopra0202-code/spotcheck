@@ -26,3 +26,52 @@ export async function saveAnswer(row: AnswerRow) {
     // never let logging break the experience
   }
 }
+
+export type ProfileRow = {
+  user_id: string;
+  role?: string | null;
+  tenure?: string | null;
+  ai_comfort?: string | null;
+  focus?: string | null;
+  pace?: string | null;
+  email?: string | null;
+};
+
+export async function saveProfile(row: ProfileRow) {
+  if (!supabase) return;
+  try {
+    await supabase.from("profiles").upsert(row, { onConflict: "user_id" });
+  } catch {
+    // never let persistence break the funnel
+  }
+}
+
+export type CheckRow = {
+  user_id: string;
+  task: string;
+  paste: string;
+  focus: string | null;
+  trustworthy: boolean;
+  missed_dims: string[];
+  result_json: unknown;
+};
+
+export async function saveCheck(row: CheckRow) {
+  if (!supabase) return;
+  try {
+    await supabase.from("checks").insert(row);
+  } catch {
+    // ignore
+  }
+}
+
+export type SignalRow = { user_id: string; type: string; value: string };
+
+export async function saveSignal(row: SignalRow) {
+  if (!supabase) return;
+  try {
+    await supabase.from("signals").insert(row);
+  } catch {
+    // ignore
+  }
+}

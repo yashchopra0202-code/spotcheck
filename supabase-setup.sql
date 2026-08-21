@@ -43,3 +43,7 @@ create policy "anon read profiles"   on public.profiles for select to anon using
 create policy "anon insert checks"   on public.checks   for insert to anon with check (true);
 create policy "anon read checks"     on public.checks   for select to anon using (true);
 create policy "anon insert signals"  on public.signals  for insert to anon with check (true);
+
+-- V3 Phase 1: onboarding pace + tenure
+alter table public.profiles add column if not exists tenure text;
+alter table public.profiles add column if not exists pace   text;
