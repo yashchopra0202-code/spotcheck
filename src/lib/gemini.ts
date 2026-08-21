@@ -38,6 +38,19 @@ const SCHEMA = {
 export type Dimension = { name: string; pass: boolean; note: string };
 export type Critique = { summary: string; trustworthy: boolean; dimensions: Dimension[]; one_fix: string };
 
+// Gemini's structured output occasionally contains raw (unescaped) control
+// characters inside string values, which makes strict JSON.parse throw. Parse
+// as-is first; on failure, replace raw control bytes (0x00–0x1F) with a space
+// — valid whether they were structural whitespace or illegal in-string chars —
+// and retry once. If it still fails, throw so the caller uses the fallback.
+export function parseCritique(text: string): Critique {
+  try {
+    return JSON.parse(text) as Critique;
+  } catch {
+    return JSON.parse(text.replace(/[\x00-\x1F]+/g, " ")) as Critique;
+  }
+}
+
 export async function critique(task: string, output: string, focus?: string): Promise<Critique> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY is not set");
@@ -68,7 +81,7 @@ export async function critique(task: string, output: string, focus?: string): Pr
     const data = await res.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error("Gemini returned no content");
-    return JSON.parse(text) as Critique;
+    return parseCritique(text);
   } finally {
     clearTimeout(timeout);
   }
