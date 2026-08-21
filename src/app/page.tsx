@@ -12,6 +12,8 @@ import PathAUpload from "@/components/screens/PathAUpload";
 import PathAFindings from "@/components/screens/PathAFindings";
 import PathAConcepts from "@/components/screens/PathAConcepts";
 import Test from "@/components/screens/Test";
+import Email from "@/components/screens/Email";
+import Done from "@/components/screens/Done";
 
 function Funnel() {
   const { state } = useFunnel();
@@ -28,14 +30,10 @@ function Funnel() {
       case "a_findings": return <PathAFindings />;
       case "a_concepts": return <PathAConcepts />;
       case "test": return <Test />;
+      case "email": return <Email />;
+      case "done": return <Done />;
       default:
-        return (
-          <div className="pad screen">
-            <p className="eyebrow">STEP</p>
-            <h2 className="title">{state.step}</h2>
-            <p className="sub">Stub — implemented in a later task.</p>
-          </div>
-        );
+        return <Welcome />;
     }
   })();
   return (
