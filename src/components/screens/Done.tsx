@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { roadmapDays } from "@/lib/funnel";
+import { roadmapDays, effectiveFocus } from "@/lib/funnel";
 
 export default function Done() {
   const { state, check } = useFunnel();
@@ -23,7 +23,7 @@ export default function Done() {
       <div className="eyebrow" style={{ color: "var(--brand)", marginTop: 14 }}>Milestone unlocked</div>
       <h2 className="title" style={{ fontSize: 21 }}>You&apos;re AI-check ready.</h2>
       <p className="sub" style={{ marginBottom: 16 }}>
-        Progress saved. Here&apos;s what you&apos;ve earned — your {days}-day plan on {state.focus ?? "your focus"} starts now.
+        Progress saved. Here&apos;s what you&apos;ve earned — your {days}-day plan on {effectiveFocus(state) ?? "your focus"} starts now.
       </p>
 
       <div className="eyebrow">Your journey</div>

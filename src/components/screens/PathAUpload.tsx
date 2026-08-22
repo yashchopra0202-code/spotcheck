@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { CHECK_OPTIONS, type TaskType } from "@/lib/funnel";
+import { CHECK_OPTIONS, effectiveFocus, type TaskType } from "@/lib/funnel";
 import { runCheck } from "@/lib/critiqueClient";
 import { track } from "@/lib/analytics";
 import { saveCheck } from "@/lib/supabase";
@@ -28,13 +28,14 @@ export default function PathAUpload() {
     if (!paste.trim() || busy) return;
     setBusy(true);
     track("apply_to_work_used", { task_type: taskType });
-    const result = await runCheck({ task: `The user asked AI to: ${checkOpt}`, output: paste, focus: state.focus ?? undefined });
+    const focus = effectiveFocus(state);
+    const result = await runCheck({ task: `The user asked AI to: ${checkOpt}`, output: paste, focus: focus ?? undefined });
     setCheck({ task: checkOpt, paste, taskType, result });
     saveCheck({
       user_id: userId,
       task: checkOpt,
       paste,
-      focus: state.focus,
+      focus,
       trustworthy: result.trustworthy,
       missed_dims: result.dimensions.filter((d) => !d.pass).map((d) => d.name),
       result_json: result,
@@ -48,6 +49,7 @@ export default function PathAUpload() {
     <div className="pad screen">
       <span className="pathtag a">PATH A · REAL PROBLEM</span>
       <h2 className="title" style={{ fontSize: 20 }}>Bring the work you want checked</h2>
+      <p className="note" style={{ margin: "2px 0 10px" }}>Paste text now · <span style={{ color: "var(--faint)" }}>Spreadsheet &amp; PDF upload coming soon</span></p>
       <div className="drop">
         <div className="ic">📎</div>
         <b>Paste your AI output below, or</b>

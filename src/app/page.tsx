@@ -16,7 +16,9 @@ import Email from "@/components/screens/Email";
 import Done from "@/components/screens/Done";
 
 function Funnel() {
-  const { state } = useFunnel();
+  const { state, back, canGoBack } = useFunnel();
+  // Back is available everywhere it can unwind, except the terminal "done" screen.
+  const showBack = canGoBack && state.step !== "done";
   const screen = (() => {
     switch (state.step) {
       case "welcome": return <Welcome />;
@@ -38,7 +40,14 @@ function Funnel() {
   })();
   return (
     <main className="app">
-      <div className="appcol" data-theme="light" key={state.step}>{screen}</div>
+      <div className="appcol" data-theme="light">
+        {showBack && (
+          <div className="topbar">
+            <button className="backbtn" onClick={back} aria-label="Go back">‹ Back</button>
+          </div>
+        )}
+        <div className="screenwrap" key={state.step}>{screen}</div>
+      </div>
     </main>
   );
 }

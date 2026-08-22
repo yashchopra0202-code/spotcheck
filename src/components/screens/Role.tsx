@@ -24,7 +24,7 @@ export default function Role() {
           <div key={t} className={`tchip${state.tenure === t ? " sel" : ""}`} onClick={() => set({ tenure: t })}>{t}</div>
         ))}
       </div>
-      <button className="cta" style={{ marginTop: 20 }} disabled={!state.role} onClick={() => { track("onboarding_step", { step: "role" }); go("comfort"); }}>
+      <button className="cta" style={{ marginTop: 20 }} disabled={!state.role || !state.tenure} onClick={() => { track("onboarding_step", { step: "role" }); go("comfort"); }}>
         Continue
       </button>
     </div>

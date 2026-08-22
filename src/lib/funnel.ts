@@ -19,12 +19,18 @@ export type FunnelState = {
   tenure: Tenure | null;
   comfort: Comfort | null;
   focus: Focus | null;
+  focusOther: string | null; // free-text when the user picks "Other"
   pace: Pace;
   email: string;
 };
 
 export function initialState(): FunnelState {
-  return { step: "welcome", role: null, tenure: null, comfort: null, focus: null, pace: "steady", email: "" };
+  return { step: "welcome", role: null, tenure: null, comfort: null, focus: null, focusOther: null, pace: "steady", email: "" };
+}
+
+// The focus to show/use downstream: a chosen area, else the "Other" free text.
+export function effectiveFocus(s: Pick<FunnelState, "focus" | "focusOther">): string | null {
+  return s.focus ?? (s.focusOther && s.focusOther.trim() ? s.focusOther.trim() : null);
 }
 
 export const ROLE_OPTIONS: { value: Role; emoji: string }[] = [

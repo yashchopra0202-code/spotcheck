@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
+import { effectiveFocus } from "@/lib/funnel";
 import { saveProfile } from "@/lib/supabase";
 import { track } from "@/lib/analytics";
 
@@ -16,7 +17,7 @@ export default function Email() {
     set({ email });
     saveProfile({
       user_id: userId, role: state.role, tenure: state.tenure,
-      ai_comfort: state.comfort, focus: state.focus, pace: state.pace, email,
+      ai_comfort: state.comfort, focus: effectiveFocus(state), pace: state.pace, email,
     });
     track("identity_captured");
     go("done");
