@@ -28,16 +28,20 @@ export default function PathAUpload() {
     }
   }
 
+  // In formula-correction mode the task is fixed and formula-specific.
+  const FORMULA_TASK = "Check this AI-written finance formula: verify the ranges, criteria, and logic; flag any error; and give the corrected formula.";
+  const taskLabel = isFormula ? FORMULA_TASK : `The user asked AI to: ${checkOpt}`;
+
   async function run() {
     if (!paste.trim() || busy) return;
     setBusy(true);
-    track("apply_to_work_used", { task_type: taskType });
+    track("apply_to_work_used", { task_type: taskType, mode: isFormula ? "formula" : "work" });
     const focus = effectiveFocus(state);
-    const result = await runCheck({ task: `The user asked AI to: ${checkOpt}`, output: paste, focus: focus ?? undefined });
-    setCheck({ task: checkOpt, paste, taskType, result });
+    const result = await runCheck({ task: taskLabel, output: paste, focus: focus ?? undefined });
+    setCheck({ task: isFormula ? "Formula correction" : checkOpt, paste, taskType, result });
     saveCheck({
       user_id: userId,
-      task: checkOpt,
+      task: isFormula ? "Formula correction" : checkOpt,
       paste,
       focus,
       trustworthy: result.trustworthy,
@@ -67,21 +71,27 @@ export default function PathAUpload() {
         </>
       ) : null}
       <textarea className="field" style={{ minHeight: 120, resize: "vertical", marginTop: canUpload ? undefined : 8 }} placeholder={isFormula ? "Paste the AI-written formula, e.g. =SUMIF(A:A,\"West\",B:B)…" : "Paste the AI's answer, formula, or cleaned data here…"} value={paste} onChange={(e) => setPaste(e.target.value)} />
-      <div className="selectlbl">What should your coach check?</div>
-      <div>
-        {CHECK_OPTIONS.map((o) => (
-          <div key={o} className={`opt${checkOpt === o ? " sel" : ""}`} onClick={() => setCheckOpt(o)}>
-            <div><b>{o}</b></div><div className="ck" />
+      {isFormula ? (
+        <p className="note" style={{ margin: "2px 0 4px" }}>Gemini will verify the ranges, criteria &amp; logic and return the corrected formula.</p>
+      ) : (
+        <>
+          <div className="selectlbl">What should your coach check?</div>
+          <div>
+            {CHECK_OPTIONS.map((o) => (
+              <div key={o} className={`opt${checkOpt === o ? " sel" : ""}`} onClick={() => setCheckOpt(o)}>
+                <div><b>{o}</b></div><div className="ck" />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
       <div className="selectlbl">Is this going to ship?</div>
       <div className="seg" role="group">
         <button type="button" className={taskType === "critical" ? "on" : ""} onClick={() => setTaskType("critical")}>Yes, it ships</button>
         <button type="button" className={taskType === "scratch" ? "on" : ""} onClick={() => setTaskType("scratch")}>Just testing</button>
       </div>
       <button className="cta" style={{ marginTop: 20 }} disabled={!paste.trim() || busy} onClick={run}>
-        {busy ? "Checking with Gemini…" : "Run the check with Gemini ✦"}
+        {busy ? "Checking with Gemini…" : isFormula ? "Check the formula with Gemini ✦" : "Run the check with Gemini ✦"}
       </button>
       <p className="note" style={{ textAlign: "center" }}>🔒 Your paste is used only to run this check.</p>
     </div>
