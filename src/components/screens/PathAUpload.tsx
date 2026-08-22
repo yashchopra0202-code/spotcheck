@@ -13,18 +13,39 @@ export default function PathAUpload() {
   const [checkOpt, setCheckOpt] = useState(CHECK_OPTIONS[0]);
   const [taskType, setTaskType] = useState<TaskType>("critical");
   const [busy, setBusy] = useState(false);
+  const [fileErr, setFileErr] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
 
   // File upload is offered only for spreadsheet work; other modes are paste-only.
   const canUpload = state.focus === "Spreadsheet work";
   const isFormula = state.focus === "Formula correction";
 
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  // Parse the uploaded file to text/values client-side (stays private) and drop it
+  // into the box so the user sees exactly what Gemini will check. .xlsx/.xls are
+  // parsed with SheetJS (lazy-loaded); .csv/.txt are read as text.
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    setFileName(`${f.name}`);
-    if (/\.(csv|txt)$/i.test(f.name)) {
-      f.text().then((t) => setPaste(t.slice(0, 8000))); // xlsx not parsed in MVP (spec §14)
+    setFileName(f.name);
+    setFileErr("");
+    try {
+      if (/\.(csv|txt)$/i.test(f.name)) {
+        const t = await f.text();
+        setPaste(t.slice(0, 8000));
+      } else if (/\.(xlsx|xls)$/i.test(f.name)) {
+        const XLSX = await import("xlsx");
+        const buf = await f.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const first = wb.SheetNames[0];
+        const csv = first ? XLSX.utils.sheet_to_csv(wb.Sheets[first]) : "";
+        if (!csv.trim()) throw new Error("empty");
+        setPaste(csv.slice(0, 8000));
+        track("file_parsed", { kind: "xlsx" });
+      } else {
+        setFileErr("Unsupported file — upload .xlsx, .xls, or .csv.");
+      }
+    } catch {
+      setFileErr("Couldn't read that file — try re-saving as .csv, or paste the values.");
     }
   }
 
@@ -59,15 +80,16 @@ export default function PathAUpload() {
       <h2 className="title" style={{ fontSize: 20 }}>{isFormula ? "Bring the formula to check" : "Bring the work you want checked"}</h2>
       {canUpload ? (
         <>
-          <p className="note" style={{ margin: "2px 0 10px" }}>Paste text · <span style={{ color: "var(--faint)" }}>PDF upload coming soon</span></p>
+          <p className="note" style={{ margin: "2px 0 10px" }}>Upload your spreadsheet or paste values · <span style={{ color: "var(--faint)" }}>PDF coming soon</span></p>
           <div className="drop">
             <div className="ic">📎</div>
-            <b>Paste your AI output below, or</b>
-            <span>.csv / .txt (xlsx: paste the values)</span><br />
+            <b>Upload a spreadsheet, or paste below</b>
+            <span>.xlsx · .xls · .csv — we read the first sheet</span><br />
             <button className="browse" type="button" onClick={() => fileInput.current?.click()}>📁 Browse files</button>
-            <input ref={fileInput} type="file" accept=".csv,.txt" hidden onChange={onFile} />
+            <input ref={fileInput} type="file" accept=".xlsx,.xls,.csv,.txt" hidden onChange={onFile} />
           </div>
-          {fileName ? <div className="filechip"><span className="x">✓</span> {fileName}</div> : null}
+          {fileName && !fileErr ? <div className="filechip"><span className="x">✓</span> {fileName} — values loaded below</div> : null}
+          {fileErr ? <div className="finding warn" style={{ marginTop: 8 }}>⚠️ {fileErr}</div> : null}
         </>
       ) : null}
       <textarea className="field" style={{ minHeight: 120, resize: "vertical", marginTop: canUpload ? undefined : 8 }} placeholder={isFormula ? "Paste the AI-written formula, e.g. =SUMIF(A:A,\"West\",B:B)…" : "Paste the AI's answer, formula, or cleaned data here…"} value={paste} onChange={(e) => setPaste(e.target.value)} />
