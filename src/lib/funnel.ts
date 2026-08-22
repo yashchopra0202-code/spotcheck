@@ -9,7 +9,7 @@ export type Role =
   | "Finance Manager / Head" | "Founder handling finance";
 export type Tenure = "0–2" | "3–5" | "6–10" | "10+";
 export type Comfort = "none" | "few" | "weekly" | "daily" | "builder";
-export type Focus = "Spreadsheet work" | "Data analysis" | "Projections & forecasting" | "Reconciliation & close";
+export type Focus = "Spreadsheet work" | "Formula correction" | "Data analysis" | "Projections & forecasting" | "Reconciliation & close";
 export type Pace = "steady" | "aggressive";
 export type TaskType = "critical" | "scratch";
 
@@ -50,11 +50,14 @@ export const COMFORT_OPTIONS: { value: Comfort; label: string }[] = [
   { value: "builder", label: "I build prompts others use" },
 ];
 
-export const FOCUS_OPTIONS: { value: Focus; emoji: string; sub?: string }[] = [
-  { value: "Spreadsheet work", emoji: "📊", sub: "Formulas, cleanup, models" },
-  { value: "Data analysis", emoji: "📈", sub: "Variance, trends, drivers" },
-  { value: "Projections & forecasting", emoji: "🔮" },
-  { value: "Reconciliation & close", emoji: "🧾" },
+// MVP-active options let the user paste/upload real work for a live Gemini check.
+// `pro` options are shown as a fake-door (grayed, "PRO") to measure willingness-to-pay.
+export const FOCUS_OPTIONS: { value: Focus; emoji: string; sub?: string; pro?: boolean }[] = [
+  { value: "Spreadsheet work", emoji: "📊", sub: "Formulas, cleanup, models — paste or upload" },
+  { value: "Formula correction", emoji: "🧮", sub: "Check & fix an AI-written formula" },
+  { value: "Data analysis", emoji: "📈", sub: "Variance, trends, drivers", pro: true },
+  { value: "Reconciliation & close", emoji: "🧾", pro: true },
+  { value: "Projections & forecasting", emoji: "🔮", pro: true },
 ];
 
 // Path A — "What should your coach check?"

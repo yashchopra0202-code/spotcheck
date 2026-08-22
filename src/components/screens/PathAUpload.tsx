@@ -15,6 +15,10 @@ export default function PathAUpload() {
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
+  // File upload is offered only for spreadsheet work; other modes are paste-only.
+  const canUpload = state.focus === "Spreadsheet work";
+  const isFormula = state.focus === "Formula correction";
+
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -48,17 +52,21 @@ export default function PathAUpload() {
   return (
     <div className="pad screen">
       <span className="pathtag a">PATH A · REAL PROBLEM</span>
-      <h2 className="title" style={{ fontSize: 20 }}>Bring the work you want checked</h2>
-      <p className="note" style={{ margin: "2px 0 10px" }}>Paste text now · <span style={{ color: "var(--faint)" }}>Spreadsheet &amp; PDF upload coming soon</span></p>
-      <div className="drop">
-        <div className="ic">📎</div>
-        <b>Paste your AI output below, or</b>
-        <span>.csv / .txt (xlsx: paste the values)</span><br />
-        <button className="browse" type="button" onClick={() => fileInput.current?.click()}>📁 Browse files</button>
-        <input ref={fileInput} type="file" accept=".csv,.txt" hidden onChange={onFile} />
-      </div>
-      {fileName ? <div className="filechip"><span className="x">✓</span> {fileName}</div> : null}
-      <textarea className="field" style={{ minHeight: 120, resize: "vertical" }} placeholder="Paste the AI's answer, formula, or cleaned data here…" value={paste} onChange={(e) => setPaste(e.target.value)} />
+      <h2 className="title" style={{ fontSize: 20 }}>{isFormula ? "Bring the formula to check" : "Bring the work you want checked"}</h2>
+      {canUpload ? (
+        <>
+          <p className="note" style={{ margin: "2px 0 10px" }}>Paste text · <span style={{ color: "var(--faint)" }}>PDF upload coming soon</span></p>
+          <div className="drop">
+            <div className="ic">📎</div>
+            <b>Paste your AI output below, or</b>
+            <span>.csv / .txt (xlsx: paste the values)</span><br />
+            <button className="browse" type="button" onClick={() => fileInput.current?.click()}>📁 Browse files</button>
+            <input ref={fileInput} type="file" accept=".csv,.txt" hidden onChange={onFile} />
+          </div>
+          {fileName ? <div className="filechip"><span className="x">✓</span> {fileName}</div> : null}
+        </>
+      ) : null}
+      <textarea className="field" style={{ minHeight: 120, resize: "vertical", marginTop: canUpload ? undefined : 8 }} placeholder={isFormula ? "Paste the AI-written formula, e.g. =SUMIF(A:A,\"West\",B:B)…" : "Paste the AI's answer, formula, or cleaned data here…"} value={paste} onChange={(e) => setPaste(e.target.value)} />
       <div className="selectlbl">What should your coach check?</div>
       <div>
         {CHECK_OPTIONS.map((o) => (
