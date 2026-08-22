@@ -71,7 +71,9 @@ export default function PathAUpload() {
 
   // In formula-correction mode the task is fixed and formula-specific.
   const FORMULA_TASK = "Check this AI-written finance formula: verify the ranges, criteria, and logic; flag any error; and give the corrected formula.";
-  const taskLabel = isFormula ? FORMULA_TASK : `The user asked AI to: ${checkOpt}`;
+  const taskLabel = isFormula
+    ? FORMULA_TASK
+    : `Check this AI-assisted finance work, focusing especially on: ${checkOpt.toLowerCase()}.`;
 
   async function run() {
     if (!paste.trim() || busy) return;

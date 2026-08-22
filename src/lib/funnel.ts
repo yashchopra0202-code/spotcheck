@@ -62,9 +62,11 @@ export const FOCUS_OPTIONS: { value: Focus; emoji: string; sub?: string; pro?: b
 
 // Path A — "What should your coach check?"
 export const CHECK_OPTIONS: string[] = [
-  "Did AI clean the data correctly?",
-  "Is this formula right?",
-  "Do these totals add up?",
+  "Duplicate rows",
+  "Missing data",
+  "Currency and units",
+  "Formula mistakes",
+  "Totals that don't add up",
 ];
 
 export const CONCEPTS: { title: string; body: string }[] = [
