@@ -5,6 +5,7 @@ import { CHECK_OPTIONS, effectiveFocus, type TaskType } from "@/lib/funnel";
 import { runCheck } from "@/lib/critiqueClient";
 import { track } from "@/lib/analytics";
 import { saveCheck } from "@/lib/supabase";
+import { summarizeRows, type Cell } from "@/lib/spreadsheet";
 
 export default function PathAUpload() {
   const { state, go, userId, setCheck } = useFunnel();
@@ -14,7 +15,12 @@ export default function PathAUpload() {
   const [taskType, setTaskType] = useState<TaskType>("critical");
   const [busy, setBusy] = useState(false);
   const [fileErr, setFileErr] = useState("");
+  const [summarized, setSummarized] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  // Small sheets go through verbatim (faithful); large ones are summarized so the
+  // token cost stays flat and Gemini reasons about structure, not a truncated dump.
+  const RAW_LIMIT = 4000;
 
   // File upload is offered only for spreadsheet work; other modes are paste-only.
   const canUpload = state.focus === "Spreadsheet work";
@@ -28,21 +34,35 @@ export default function PathAUpload() {
     if (!f) return;
     setFileName(f.name);
     setFileErr("");
+    setSummarized(false);
     try {
-      if (/\.(csv|txt)$/i.test(f.name)) {
+      if (/\.txt$/i.test(f.name)) {
         const t = await f.text();
         setPaste(t.slice(0, 8000));
-      } else if (/\.(xlsx|xls)$/i.test(f.name)) {
-        const XLSX = await import("xlsx");
-        const buf = await f.arrayBuffer();
-        const wb = XLSX.read(buf, { type: "array" });
-        const first = wb.SheetNames[0];
-        const csv = first ? XLSX.utils.sheet_to_csv(wb.Sheets[first]) : "";
-        if (!csv.trim()) throw new Error("empty");
-        setPaste(csv.slice(0, 8000));
-        track("file_parsed", { kind: "xlsx" });
-      } else {
+        return;
+      }
+      if (!/\.(xlsx|xls|csv)$/i.test(f.name)) {
         setFileErr("Unsupported file — upload .xlsx, .xls, or .csv.");
+        return;
+      }
+      const XLSX = await import("xlsx");
+      const wb = /\.csv$/i.test(f.name)
+        ? XLSX.read(await f.text(), { type: "string" })
+        : XLSX.read(await f.arrayBuffer(), { type: "array" });
+      const first = wb.SheetNames[0];
+      const sheet = first ? wb.Sheets[first] : undefined;
+      if (!sheet) throw new Error("empty");
+      const csv = XLSX.utils.sheet_to_csv(sheet);
+      if (!csv.trim()) throw new Error("empty");
+      if (csv.length <= RAW_LIMIT) {
+        setPaste(csv);
+        track("file_parsed", { kind: "sheet", mode: "raw" });
+      } else {
+        // Bounded structured summary for large sheets.
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as Cell[][];
+        setPaste(summarizeRows(rows, first));
+        setSummarized(true);
+        track("file_parsed", { kind: "sheet", mode: "summary" });
       }
     } catch {
       setFileErr("Couldn't read that file — try re-saving as .csv, or paste the values.");
@@ -88,7 +108,8 @@ export default function PathAUpload() {
             <button className="browse" type="button" onClick={() => fileInput.current?.click()}>📁 Browse files</button>
             <input ref={fileInput} type="file" accept=".xlsx,.xls,.csv,.txt" hidden onChange={onFile} />
           </div>
-          {fileName && !fileErr ? <div className="filechip"><span className="x">✓</span> {fileName} — values loaded below</div> : null}
+          {fileName && !fileErr ? <div className="filechip"><span className="x">✓</span> {fileName} — {summarized ? "summarized below (large sheet)" : "values loaded below"}</div> : null}
+          {summarized ? <p className="note" style={{ margin: "2px 0 0" }}>Large file — we sent Gemini a structured summary (shape, per-column totals, sample rows) instead of every row, so the check stays fast and cheap.</p> : null}
           {fileErr ? <div className="finding warn" style={{ marginTop: 8 }}>⚠️ {fileErr}</div> : null}
         </>
       ) : null}
