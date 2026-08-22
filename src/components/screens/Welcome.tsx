@@ -14,7 +14,7 @@ export default function Welcome() {
     <div className="pad screen">
       <div className="brandlogo"><span className="mk" /><span className="wm">Spot<span>Check</span></span></div>
       <div style={{ margin: "auto 0" }}>
-        <h2 className="title" style={{ fontSize: 25 }}>Trust what AI does with your numbers.</h2>
+        <h2 className="title">Trust what AI does with your numbers.</h2>
         <p className="sub">A 60-second setup. No sign-up to start.</p>
       </div>
       <button className="cta" onClick={() => go("role")}>Begin</button>

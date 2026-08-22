@@ -33,7 +33,7 @@ export default function Focus() {
       <div className="eyebrow">Your focus</div>
       <h2 className="title">What do you want to trust yourself with first?</h2>
       <p className="sub" style={{ marginBottom: 14 }}>Pick one to start.</p>
-      <div>
+      <div className="optgrid">
         {FOCUS_OPTIONS.map((o) =>
           o.pro ? (
             <div key={o.value} className="opt pro" onClick={() => tapPro(o.value)}>

@@ -16,8 +16,23 @@ import Test from "@/components/screens/Test";
 import Email from "@/components/screens/Email";
 import Done from "@/components/screens/Done";
 
+// Desktop chrome shows a 5-stage progress rail; group the 13 steps into stages.
+const STAGES = ["work", "plan", "check", "test", "save"];
+function stageIndex(step: string): number {
+  switch (step) {
+    case "welcome": case "role": case "comfort": case "focus": case "pace": return 0;
+    case "roadmap": case "fork": return 1;
+    case "a_upload": case "a_findings": case "a_concepts": return 2;
+    case "test": return 3;
+    case "email": return 4;
+    case "done": return 5;
+    default: return 0;
+  }
+}
+
 function Funnel() {
   const { state, back, canGoBack, theme } = useFunnel();
+  const cur = stageIndex(state.step);
   // Back is available everywhere it can unwind, except the terminal "done" screen.
   const showBack = canGoBack && state.step !== "done";
   const screen = (() => {
@@ -43,12 +58,18 @@ function Funnel() {
     <main className="app" data-theme={theme}>
       <div className="appcol">
         <div className="topbar">
-          {showBack ? (
-            <button className="backbtn" onClick={back} aria-label="Go back">‹ Back</button>
-          ) : (
-            <span aria-hidden="true" />
-          )}
-          <ThemeSwitch />
+          <div className="tb-left">
+            <span className="brandlogo tb-logo"><span className="mk" /><span className="wm">Spot<span>Check</span></span></span>
+            {showBack ? (
+              <button className="backbtn" onClick={back} aria-label="Go back">‹ Back</button>
+            ) : null}
+          </div>
+          <div className="tb-right">
+            <div className="dots" aria-hidden="true">
+              {STAGES.map((s, i) => <i key={s} className={i < cur ? "done" : i === cur ? "on" : ""} />)}
+            </div>
+            <ThemeSwitch />
+          </div>
         </div>
         <div className="screenwrap" key={state.step}>{screen}</div>
       </div>

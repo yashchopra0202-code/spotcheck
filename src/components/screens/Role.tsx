@@ -8,8 +8,8 @@ export default function Role() {
   return (
     <div className="pad screen">
       <div className="eyebrow">About you</div>
-      <h2 className="title" style={{ fontSize: 20 }}>What&apos;s your role in finance?</h2>
-      <div>
+      <h2 className="title">What&apos;s your role in finance?</h2>
+      <div className="optgrid">
         {ROLE_OPTIONS.map((o) => (
           <div key={o.value} className={`opt${state.role === o.value ? " sel" : ""}`} onClick={() => set({ role: o.value })}>
             <div className="em">{o.emoji}</div>

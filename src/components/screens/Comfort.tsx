@@ -8,8 +8,8 @@ export default function Comfort() {
   return (
     <div className="pad screen">
       <div className="eyebrow">No wrong answer</div>
-      <h2 className="title" style={{ fontSize: 20 }}>How much have you used AI for work?</h2>
-      <div>
+      <h2 className="title">How much have you used AI for work?</h2>
+      <div className="optgrid">
         {COMFORT_OPTIONS.map((o) => (
           <div key={o.value} className={`opt${state.comfort === o.value ? " sel" : ""}`} onClick={() => set({ comfort: o.value })}>
             <div><b>{o.label}</b></div>
