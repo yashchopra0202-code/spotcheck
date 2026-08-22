@@ -6,8 +6,15 @@
 // Brevo lets you send from a single *verified sender* (e.g. your own Gmail)
 // with no domain — good enough for an MVP. For better inbox placement, verify a
 // domain in Brevo later and point EMAIL_FROM_ADDRESS at it (no code change).
-const SENDER_EMAIL = process.env.EMAIL_FROM_ADDRESS || "";
-const SENDER_NAME = process.env.EMAIL_FROM_NAME || "SpotCheck";
+// Strip ALL whitespace, including invisible Unicode spaces (e.g. U+202F narrow
+// no-break space) that pasting into a dashboard can silently inject. Such a
+// character in the api-key header throws "Cannot convert argument to a
+// ByteString" before the request is even sent. API keys and email addresses
+// never legitimately contain whitespace, so this is safe and defensive.
+const clean = (v: string | undefined) => (v || "").replace(/\s+/g, "");
+
+const SENDER_EMAIL = clean(process.env.EMAIL_FROM_ADDRESS);
+const SENDER_NAME = (process.env.EMAIL_FROM_NAME || "SpotCheck").trim();
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://spotcheck-welleap.vercel.app";
 
 export type WelcomeInput = { email: string; role?: string | null; focus?: string | null };
@@ -45,7 +52,7 @@ function escapeHtml(s: string): string {
 }
 
 export async function sendWelcomeEmail(input: WelcomeInput): Promise<{ sent: boolean; reason?: string }> {
-  const key = process.env.BREVO_API_KEY;
+  const key = clean(process.env.BREVO_API_KEY);
   if (!key) return { sent: false, reason: "BREVO_API_KEY not set" };
   if (!SENDER_EMAIL) return { sent: false, reason: "EMAIL_FROM_ADDRESS not set" };
 
