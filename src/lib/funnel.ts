@@ -122,30 +122,30 @@ export function coachIntro(s: Pick<FunnelState, "role" | "tenure" | "comfort">):
 export type TestQuestion = { q: string; opts: { t: string; correct: boolean }[] };
 
 export const TEST_QUESTIONS: TestQuestion[] = [
-  { q: "AI says your 12-month revenue totals ₹14.2 Cr. Fastest way to trust it?", opts: [
-    { t: "Cross-foot the 12 monthly figures", correct: true },
-    { t: "Ask AI if it's sure", correct: false },
-    { t: "Assume it's right — it ran", correct: false } ] },
-  { q: 'AI wrote =SUMIF(A:A,"West",B:B). Biggest risk?', opts: [
-    { t: "The criteria text must exactly match the data", correct: true },
-    { t: "SUMIF is deprecated", correct: false },
-    { t: "No risk", correct: false } ] },
-  { q: "AI reports a 47% net margin; you know the business runs ~8%. You should…", opts: [
-    { t: "Check the denominator & units — likely wrong", correct: true },
-    { t: "Trust it, margins vary", correct: false },
-    { t: "Round to 50%", correct: false } ] },
-  { q: 'AI "cleaned" 1,200 rows down to 900. First check?', opts: [
-    { t: "Row-count drop + the de-dupe key", correct: true },
-    { t: "Cell colours", correct: false },
-    { t: "The font", correct: false } ] },
-  { q: "You need Q3 (Jul–Sep) but AI gave Oct–Dec. That's a failure of…", opts: [
-    { t: "Instruction fidelity", correct: true },
-    { t: "Plausibility", correct: false },
-    { t: "Formatting", correct: false } ] },
-  { q: "AI gives a number with no formula or steps. Before shipping…", opts: [
-    { t: "Make sure you can reproduce it yourself", correct: true },
-    { t: "Ship it — it's precise", correct: false },
-    { t: "Change the font", correct: false } ] },
+  { q: "AI reports \"Gross margin 62%\" from ₹10.0 Cr revenue and ₹6.2 Cr COGS. What's wrong?", opts: [
+    { t: "AI used COGS ÷ revenue; gross margin is (revenue − COGS) ÷ revenue = 38%", correct: true },
+    { t: "Nothing — 62% is high but possible", correct: false },
+    { t: "Revenue and COGS are swapped", correct: false } ] },
+  { q: "AI: \"New product revenue grew +8,900% (₹2 L → ₹1.8 Cr).\" Before this goes in the board deck…", opts: [
+    { t: "Flag the near-zero launch base — the % is right but misleading; lead with absolute values", correct: true },
+    { t: "Recheck the maths — growth can't exceed 100%", correct: false },
+    { t: "Nothing — it's a real, impressive number", correct: false } ] },
+  { q: "AI \"reconciled\" month-end cash to the P&L and flagged a ₹30 L gap as an error. Before you escalate?", opts: [
+    { t: "Timing / accruals — cash and accrual bases differ by design; the gap may be expected", correct: true },
+    { t: "The bank statement is wrong", correct: false },
+    { t: "Someone mis-posted ₹30 L — start an audit", correct: false } ] },
+  { q: "You asked for \"Q3 revenue.\" Your fiscal year starts April; AI returned Jul–Sep figures. The risk?", opts: [
+    { t: "Fiscal Q3 is Oct–Dec; AI used calendar quarters — confirm the period before it ships", correct: true },
+    { t: "None — Q3 is always Jul–Sep", correct: false },
+    { t: "The figures need to be annualised", correct: false } ] },
+  { q: "AI: \"DSO = 30 days,\" using this year's revenue but last year's period-end receivables. The problem?", opts: [
+    { t: "Numerator and denominator are from different periods — the ratio is meaningless", correct: true },
+    { t: "DSO should use COGS, not revenue", correct: false },
+    { t: "30 days is too low to be real", correct: false } ] },
+  { q: "AI's variance table shows \"Opex favourable +₹12 L,\" but actual Opex came in ₹12 L above budget. What happened?", opts: [
+    { t: "Sign flipped — Opex over budget is unfavourable; AI subtracted in the wrong order", correct: true },
+    { t: "Favourable is correct — lower costs are always favourable", correct: false },
+    { t: "₹12 L is within tolerance, ignore it", correct: false } ] },
 ];
 
 export function scoreAnswers(correct: boolean[]): number {
