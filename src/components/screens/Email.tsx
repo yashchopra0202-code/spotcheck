@@ -19,6 +19,13 @@ export default function Email() {
       user_id: userId, role: state.role, tenure: state.tenure,
       ai_comfort: state.comfort, focus: effectiveFocus(state), pace: state.pace, email,
     });
+    // Fire-and-forget welcome email; never blocks the funnel or surfaces an error
+    // to the user (no-ops server-side if RESEND_API_KEY isn't configured).
+    fetch("/api/welcome", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, role: state.role, focus: effectiveFocus(state) }),
+    }).catch(() => {});
     track("identity_captured");
     go("done");
   }
