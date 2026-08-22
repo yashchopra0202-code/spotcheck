@@ -6,6 +6,8 @@ import { getUserId, initAnalytics, track } from "@/lib/analytics";
 import { saveProfile } from "@/lib/supabase";
 import type { Critique } from "@/lib/gemini";
 
+export type Theme = "light" | "dark" | "indigo";
+
 type Ctx = {
   state: FunnelState;
   set: (p: Partial<FunnelState>) => void;
@@ -15,10 +17,13 @@ type Ctx = {
   userId: string;
   check: { task: string; paste: string; taskType: TaskType; result: Critique } | null;
   setCheck: (c: Ctx["check"]) => void;
+  theme: Theme;
+  setTheme: (t: Theme) => void;
 };
 
 const FunnelCtx = createContext<Ctx | null>(null);
 const LS_KEY = "spotcheck_funnel";
+const THEME_KEY = "spotcheck_theme";
 
 export function useFunnel(): Ctx {
   const ctx = useContext(FunnelCtx);
@@ -31,6 +36,7 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
   const [userId, setUserId] = useState("");
   const [check, setCheck] = useState<{ task: string; paste: string; taskType: TaskType; result: Critique } | null>(null);
   const [history, setHistory] = useState<Step[]>([]);
+  const [theme, setThemeState] = useState<Theme>("light");
   const hydrated = useRef(false);
 
   // Hydrate from localStorage + set up analytics/anon id once.
@@ -42,11 +48,27 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) setState((s) => ({ ...s, ...JSON.parse(raw) }));
+      const t = localStorage.getItem(THEME_KEY);
+      if (t === "light" || t === "dark" || t === "indigo") setThemeState(t);
     } catch {
       /* ignore */
     }
     hydrated.current = true;
   }, []);
+
+  const setTheme = (t: Theme) => {
+    setThemeState(t);
+    try {
+      localStorage.setItem(THEME_KEY, t);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Mirror the theme onto <html> so the body background (and overscroll) is themed too.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   // Persist funnel state after hydration.
   useEffect(() => {
@@ -91,7 +113,7 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
   };
 
   return (
-    <FunnelCtx.Provider value={{ state, set, go, back, canGoBack: history.length > 0, userId, check, setCheck }}>
+    <FunnelCtx.Provider value={{ state, set, go, back, canGoBack: history.length > 0, userId, check, setCheck, theme, setTheme }}>
       {children}
     </FunnelCtx.Provider>
   );

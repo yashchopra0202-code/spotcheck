@@ -1,6 +1,7 @@
 "use client";
 
 import FunnelProvider, { useFunnel } from "@/components/FunnelProvider";
+import ThemeSwitch from "@/components/ThemeSwitch";
 import Welcome from "@/components/screens/Welcome";
 import Role from "@/components/screens/Role";
 import Comfort from "@/components/screens/Comfort";
@@ -16,7 +17,7 @@ import Email from "@/components/screens/Email";
 import Done from "@/components/screens/Done";
 
 function Funnel() {
-  const { state, back, canGoBack } = useFunnel();
+  const { state, back, canGoBack, theme } = useFunnel();
   // Back is available everywhere it can unwind, except the terminal "done" screen.
   const showBack = canGoBack && state.step !== "done";
   const screen = (() => {
@@ -39,13 +40,16 @@ function Funnel() {
     }
   })();
   return (
-    <main className="app">
-      <div className="appcol" data-theme="light">
-        {showBack && (
-          <div className="topbar">
+    <main className="app" data-theme={theme}>
+      <div className="appcol">
+        <div className="topbar">
+          {showBack ? (
             <button className="backbtn" onClick={back} aria-label="Go back">‹ Back</button>
-          </div>
-        )}
+          ) : (
+            <span aria-hidden="true" />
+          )}
+          <ThemeSwitch />
+        </div>
         <div className="screenwrap" key={state.step}>{screen}</div>
       </div>
     </main>

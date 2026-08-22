@@ -7,18 +7,31 @@
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{font-family:-apple-system,"SF Pro Text",system-ui,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased}
+html[data-theme]{background:var(--wash)}
+body{font-family:-apple-system,"SF Pro Text",system-ui,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased;background:var(--wash)}
 
 /* App shell: centered mobile-width column, full-bleed on small screens */
 .app{min-height:100vh;background:var(--wash);color:var(--text);display:flex;justify-content:center}
 .appcol{width:100%;max-width:440px;min-height:100vh;background:var(--wash);position:relative;overflow-x:hidden;display:flex;flex-direction:column}
-.topbar{flex:none;display:flex;align-items:center;height:46px;padding:0 8px}
+.topbar{flex:none;display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 12px 0 6px}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:8px 12px;border-radius:10px}
 .backbtn:hover{color:var(--brand);background:var(--sel)}
+.themeseg{display:inline-flex;gap:6px;align-items:center}
+.swatch{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);cursor:pointer;padding:0;display:grid;place-items:center;transition:transform .12s,box-shadow .12s}
+.swatch:hover{transform:translateY(-1px)}
+.swatch .dot{width:7px;height:7px;border-radius:50%;display:block}
+.swatch.on{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--brand)}
 .screenwrap{flex:1;min-height:0;display:flex;flex-direction:column}
-.pad{padding:34px 22px 26px;display:flex;flex-direction:column;flex:1;min-height:0}
-.topbar + .screenwrap .pad{padding-top:8px}
+.pad{padding:14px 22px 26px;display:flex;flex-direction:column;flex:1;min-height:0}
 .screen{animation:fade .3s ease}
+
+/* Themed browser surfaces — the details that read as "built, not assembled". */
+[data-theme] ::selection{background:color-mix(in srgb,var(--brand) 24%,transparent);color:var(--text)}
+[data-theme] :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+.field,textarea,input{caret-color:var(--brand)}
+.pad::-webkit-scrollbar{width:9px}
+.pad::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;border:2px solid var(--wash)}
+.pad::-webkit-scrollbar-track{background:transparent}
 @keyframes fade{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
 
 /* Web layout: on wider screens the funnel becomes a centered, elevated card on
@@ -46,9 +59,12 @@ body{font-family:-apple-system,"SF Pro Text",system-ui,Segoe UI,sans-serif;-webk
     flex:1;
     min-height:0;
     overflow-y:auto;
-    padding:44px 38px 32px;
+    padding:18px 38px 34px;
   }
-  .topbar + .screenwrap .pad{padding-top:14px}
+  /* Dark elevation comes from border + depth, not a shadow that vanishes on dark. */
+  .app[data-theme="dark"] .appcol{
+    box-shadow:0 44px 90px -40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.02);
+  }
 }
 
 .brandlogo{display:flex;align-items:center;gap:9px}
