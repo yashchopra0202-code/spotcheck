@@ -42,7 +42,7 @@ export default function PathAConcepts() {
           </div>
         ))
       )}
-      <button className="cta" style={{ marginTop: 20 }} disabled={concepts === null} onClick={() => go("test")}>Test what I learned →</button>
+      <button className="cta" style={{ marginTop: 20 }} disabled={concepts === null} onClick={() => go("results")}>See where you stand →</button>
     </div>
   );
 }

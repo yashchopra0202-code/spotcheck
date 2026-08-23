@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { CHECK_OPTIONS, effectiveFocus, type TaskType } from "@/lib/funnel";
+import { CHECK_OPTIONS, effectiveFocus } from "@/lib/funnel";
 import { runCheck } from "@/lib/critiqueClient";
 import { track } from "@/lib/analytics";
 import { saveCheck } from "@/lib/supabase";
@@ -12,7 +12,6 @@ export default function PathAUpload() {
   const [paste, setPaste] = useState("");
   const [fileName, setFileName] = useState("");
   const [checkOpt, setCheckOpt] = useState(CHECK_OPTIONS[0]);
-  const [taskType, setTaskType] = useState<TaskType>("critical");
   const [busy, setBusy] = useState(false);
   const [fileErr, setFileErr] = useState("");
   const [summarized, setSummarized] = useState(false);
@@ -85,11 +84,11 @@ export default function PathAUpload() {
   async function run() {
     if (!paste.trim() || busy) return;
     setBusy(true);
-    track("apply_to_work_used", { task_type: taskType, mode: isFormula ? "formula" : "work" });
+    track("apply_to_work_used", { mode: isFormula ? "formula" : "work" });
     const focus = effectiveFocus(state);
     const result = await runCheck({ task: taskLabel, output: paste, focus: focus ?? undefined });
     const missed = result.dimensions.filter((d) => !d.pass).map((d) => d.name);
-    setCheck({ task: taskName, paste, taskType, result });
+    setCheck({ task: taskName, paste, result });
     addCheck({ task: taskName, trustworthy: result.trustworthy, missed_dims: missed, ts: Date.now() });
     saveCheck({
       user_id: userId,
@@ -144,11 +143,6 @@ export default function PathAUpload() {
           </div>
         </>
       )}
-      <div className="selectlbl">Is this going to ship?</div>
-      <div className="seg" role="group">
-        <button type="button" className={taskType === "critical" ? "on" : ""} onClick={() => setTaskType("critical")}>Yes, it ships</button>
-        <button type="button" className={taskType === "scratch" ? "on" : ""} onClick={() => setTaskType("scratch")}>Just testing</button>
-      </div>
       <button className="cta" style={{ marginTop: 20 }} disabled={!paste.trim() || busy} onClick={run}>
         {busy ? "Checking with AI…" : isFormula ? "Check the formula with AI ✦" : "Run the check with AI ✦"}
       </button>

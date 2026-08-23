@@ -5,7 +5,7 @@ import { roadmapDays, effectiveFocus, weakestDimensions } from "@/lib/funnel";
 import { track } from "@/lib/analytics";
 
 export default function Done() {
-  const { state, check, checks } = useFunnel();
+  const { state, check, checks, go } = useFunnel();
   const days = roadmapDays(state.pace);
   const ranCheck = !!check;
   const pct = ranCheck ? 15 : 10;
@@ -19,7 +19,7 @@ export default function Done() {
   const [notified, setNotified] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setFill(pct), 160);
-    track("tomorrow_hook_shown", { dim: tomorrowDim });
+    track("daily_loop_shown", { dim: tomorrowDim });
     return () => clearTimeout(t);
   }, [pct, tomorrowDim]);
 
@@ -65,17 +65,12 @@ export default function Done() {
       <div className="prog" style={{ marginTop: 12 }}><div className="f" style={{ transform: `scaleX(${fill / 100})` }} /></div>
       <p className="note">Day 1 of {days} · {pct}% to &ldquo;AI-ready analyst.&rdquo;</p>
 
-      {/* The hook: tomorrow's sharpener is locked, so there's a reason to come back. */}
-      <div className="eyebrow" style={{ marginTop: 18 }}>Coming tomorrow</div>
-      <div className="lockcard">
-        <div className="lk">🔒</div>
-        <div>
-          <b>{tomorrowDim} · 2-min sharpener</b>
-          <p>A quick drill on your weakest check — unlocks in 24h. This is how the daily habit builds.</p>
-        </div>
-      </div>
+      {/* The daily loop: a live 2-min sharpener on the user's weakest check. */}
+      <div className="eyebrow" style={{ marginTop: 18 }}>Your daily habit</div>
+      <button className="cta" style={{ marginTop: 8 }} onClick={() => go("drill")}>Start today&apos;s 2-min sharpener →</button>
+      <p className="note" style={{ textAlign: "center" }}>A fresh set on your weakest checks — starting with {tomorrowDim}.</p>
       <button className="ghost" onClick={remindMe} disabled={notified}>
-        {notified ? "We'll remind you ✓" : "🔔 Remind me when it unlocks"}
+        {notified ? "We'll nudge you daily ✓" : "🔔 Get a daily nudge"}
       </button>
     </div>
   );

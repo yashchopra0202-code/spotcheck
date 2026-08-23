@@ -1,17 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { testBadge } from "@/lib/funnel";
 
-// Post-test beat 1 (of the two-screen finish): the score reveal + the achievement it
-// unlocks. A celebrated moment before we ask for the email and show the roadmap/hook.
+// The milestone screen (replaces the old quiz-score screen). Instead of a generic test
+// score, it celebrates what the user actually did: real AI-assisted work checked against
+// the standard, and the issues they caught before those numbers could ship.
 export default function Results() {
-  const { testResult, go } = useFunnel();
-  const score = testResult?.score ?? 0;
-  const total = testResult?.total ?? 0;
-  const badge = testBadge(score, total);
+  const { checks, go } = useFunnel();
+  const issues = checks.reduce((n, c) => n + c.missed_dims.length, 0);
+  const runs = checks.length;
+  const clean = issues === 0;
 
-  // Reveal the badge a beat after the score lands.
+  // Reveal the badge a beat after the number lands.
   const [showBadge, setShowBadge] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setShowBadge(true), 450);
@@ -20,18 +20,23 @@ export default function Results() {
 
   return (
     <div className="pad screen">
-      <div className="eyebrow" style={{ color: "var(--brand)" }}>Your result</div>
-      <div className="scorebig"><div className="v">{score}<small>/{total}</small></div></div>
+      <div className="eyebrow" style={{ color: "var(--brand)" }}>Milestone unlocked</div>
+
+      <div className="scorebig">
+        <div className="v">{clean ? runs : issues}<small>{clean ? (runs === 1 ? " check" : " checks") : (issues === 1 ? " issue" : " issues")}</small></div>
+      </div>
       <p className="sub" style={{ textAlign: "center", marginBottom: 18 }}>
-        A sharp starting line — this is where your AI judgment begins, with room to climb.
+        {clean
+          ? "You verified your AI-assisted work and it checked out clean. That's the habit that keeps wrong numbers from shipping."
+          : `You caught ${issues} ${issues === 1 ? "issue" : "issues"} before ${issues === 1 ? "it" : "they"}'d have shipped — ${issues === 1 ? "a number" : "numbers"} you won't get caught on later.`}
       </p>
 
       <div className={`achieve${showBadge ? " in" : ""}`}>
-        <div className="ic">{badge.emoji}</div>
+        <div className="ic">🎯</div>
         <div>
           <div className="l">Achievement unlocked</div>
-          <b>{badge.name}</b>
-          <p>{badge.blurb}</p>
+          <b>First real check</b>
+          <p>You ran your real AI-assisted work against a standard of good — most people never do.</p>
         </div>
       </div>
 

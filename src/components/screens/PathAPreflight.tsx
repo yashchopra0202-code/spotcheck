@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { effectiveFocus, type TaskType } from "@/lib/funnel";
+import { effectiveFocus } from "@/lib/funnel";
 import { runPreflight, type Preflight } from "@/lib/preflightClient";
 import { runCheck } from "@/lib/critiqueClient";
 import { saveCheck } from "@/lib/supabase";
@@ -20,7 +20,6 @@ export default function PathAPreflight() {
   const [result, setResult] = useState<Preflight | null>(null);
   const [copied, setCopied] = useState(false);
   const [paste, setPaste] = useState("");
-  const [taskType, setTaskType] = useState<TaskType>("critical");
   const [checking, setChecking] = useState(false);
 
   const focus = effectiveFocus(state);
@@ -52,12 +51,12 @@ export default function PathAPreflight() {
   async function runTheCheck() {
     if (!paste.trim() || checking) return;
     setChecking(true);
-    track("apply_to_work_used", { task_type: taskType, mode: "work" });
+    track("apply_to_work_used", { mode: "work" });
     const taskLabel = `Check the AI's output for this task: "${task}". Judge whether it is trustworthy to ship and flag anything wrong.`;
     const critique = await runCheck({ task: taskLabel, output: paste, focus: focus ?? undefined });
     const missed = critique.dimensions.filter((d) => !d.pass).map((d) => d.name);
     const taskName = task.trim().slice(0, 80);
-    setCheck({ task: taskName, paste, taskType, result: critique });
+    setCheck({ task: taskName, paste, result: critique });
     addCheck({ task: taskName, trustworthy: critique.trustworthy, missed_dims: missed, ts: Date.now() });
     saveCheck({ user_id: userId, task: taskName, paste, focus, trustworthy: critique.trustworthy, missed_dims: missed, result_json: critique });
     track("check_completed", { trustworthy: critique.trustworthy });
@@ -123,11 +122,6 @@ export default function PathAPreflight() {
           Then sanity-check: {result.post_checks.join(" · ")}
         </div>
       ) : null}
-      <div className="selectlbl">Is this going to ship?</div>
-      <div className="seg" role="group">
-        <button type="button" className={taskType === "critical" ? "on" : ""} onClick={() => setTaskType("critical")}>Yes, it ships</button>
-        <button type="button" className={taskType === "scratch" ? "on" : ""} onClick={() => setTaskType("scratch")}>Just testing</button>
-      </div>
       <button className="cta" style={{ marginTop: 18 }} disabled={!paste.trim() || checking} onClick={runTheCheck}>
         {checking ? "Checking with AI…" : "Run the check with AI ✦"}
       </button>

@@ -64,6 +64,7 @@ export default function PathAFindings() {
       </div>
 
       <button className="ghost" style={{ marginTop: 10 }} onClick={checkAnother}>+ Check another output</button>
+      <button className="ghost" onClick={() => { track("mock_review_started"); go("mock_review"); }}>🎤 Now defend it — face a mock review</button>
       <button className="cta" onClick={() => go("a_concepts")}>Why did this happen? →</button>
     </div>
   );

@@ -12,8 +12,8 @@ import Fork from "@/components/screens/Fork";
 import PathAPreflight from "@/components/screens/PathAPreflight";
 import PathAUpload from "@/components/screens/PathAUpload";
 import PathAFindings from "@/components/screens/PathAFindings";
+import MockReview from "@/components/screens/MockReview";
 import PathAConcepts from "@/components/screens/PathAConcepts";
-import Test from "@/components/screens/Test";
 import Results from "@/components/screens/Results";
 import Email from "@/components/screens/Email";
 import Done from "@/components/screens/Done";
@@ -25,8 +25,8 @@ function stageIndex(step: string): number {
   switch (step) {
     case "welcome": case "role": case "comfort": case "focus": case "pace": return 0;
     case "roadmap": case "fork": return 1;
-    case "a_preflight": case "a_upload": case "a_findings": case "a_concepts": return 2;
-    case "test": case "results": return 3;
+    case "a_preflight": case "a_upload": case "a_findings": case "mock_review": case "a_concepts": return 2;
+    case "results": return 3;
     case "email": return 4;
     case "done": case "drill": return 5;
     default: return 0;
@@ -50,8 +50,8 @@ function Funnel() {
       case "a_preflight": return <PathAPreflight />;
       case "a_upload": return <PathAUpload />;
       case "a_findings": return <PathAFindings />;
+      case "mock_review": return <MockReview />;
       case "a_concepts": return <PathAConcepts />;
-      case "test": return <Test />;
       case "results": return <Results />;
       case "email": return <Email />;
       case "done": return <Done />;

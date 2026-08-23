@@ -4,7 +4,7 @@ import { DIMENSIONS } from "./rubric";
 
 export type Step =
   | "welcome" | "role" | "comfort" | "focus" | "pace" | "roadmap" | "fork"
-  | "a_preflight" | "a_upload" | "a_findings" | "a_concepts" | "test" | "results" | "email" | "done" | "drill";
+  | "a_preflight" | "a_upload" | "a_findings" | "mock_review" | "a_concepts" | "results" | "email" | "done" | "drill";
 
 export type Role =
   | "FP&A / Financial Analyst" | "Accountant / Controller"

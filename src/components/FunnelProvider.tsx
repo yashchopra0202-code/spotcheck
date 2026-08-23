@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { FunnelState, Step, TaskType, CheckRecord, initialState, effectiveFocus } from "@/lib/funnel";
+import { FunnelState, Step, CheckRecord, initialState, effectiveFocus } from "@/lib/funnel";
 import { getUserId, initAnalytics, track } from "@/lib/analytics";
 import { saveProfile } from "@/lib/supabase";
 import type { Critique } from "@/lib/gemini";
@@ -15,12 +15,10 @@ type Ctx = {
   back: () => void;
   canGoBack: boolean;
   userId: string;
-  check: { task: string; paste: string; taskType: TaskType; result: Critique } | null;
+  check: { task: string; paste: string; result: Critique } | null;
   setCheck: (c: Ctx["check"]) => void;
   checks: CheckRecord[];
   addCheck: (c: CheckRecord) => void;
-  testResult: { score: number; total: number } | null;
-  setTestResult: (r: { score: number; total: number }) => void;
   theme: Theme;
   setTheme: (t: Theme) => void;
 };
@@ -38,9 +36,8 @@ export function useFunnel(): Ctx {
 export default function FunnelProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<FunnelState>(initialState);
   const [userId, setUserId] = useState("");
-  const [check, setCheck] = useState<{ task: string; paste: string; taskType: TaskType; result: Critique } | null>(null);
+  const [check, setCheck] = useState<{ task: string; paste: string; result: Critique } | null>(null);
   const [checks, setChecks] = useState<CheckRecord[]>([]);
-  const [testResult, setTestResult] = useState<{ score: number; total: number } | null>(null);
   const [history, setHistory] = useState<Step[]>([]);
   const [theme, setThemeState] = useState<Theme>("light");
   const hydrated = useRef(false);
@@ -123,7 +120,7 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
   };
 
   return (
-    <FunnelCtx.Provider value={{ state, set, go, back, canGoBack: history.length > 0, userId, check, setCheck, checks, addCheck, testResult, setTestResult, theme, setTheme }}>
+    <FunnelCtx.Provider value={{ state, set, go, back, canGoBack: history.length > 0, userId, check, setCheck, checks, addCheck, theme, setTheme }}>
       {children}
     </FunnelCtx.Provider>
   );
