@@ -46,7 +46,6 @@ export default function Landing({ onBegin }: { onBegin: () => void }) {
           <nav className="lp-nav-links">
             <a href="#how">How it works</a>
             <a href="#standard">The standard</a>
-            <a href="#pricing">Pricing</a>
           </nav>
           <div className="lp-nav-right">
             <ThemeSwitch />
@@ -182,35 +181,6 @@ export default function Landing({ onBegin }: { onBegin: () => void }) {
                 <div><b>{name}</b><p>{desc}</p></div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING — values unchanged: Free ₹0 / Pro ₹999/mo */}
-      <section className="lp-section" id="pricing">
-        <div className="lp-wrap">
-          <h2 className="lp-h2">Start free. Upgrade when it&apos;s part of your day.</h2>
-          <div className="lp-prices">
-            <div className="lp-price">
-              <div className="lp-price-name">Free</div>
-              <div className="lp-price-amt">₹0</div>
-              <ul>
-                <li><IconCheck /> Check your real spreadsheet &amp; formula work</li>
-                <li><IconCheck /> Daily 2-minute sharpener</li>
-                <li><IconCheck /> Mock review</li>
-              </ul>
-              <button className="lp-btn lp-btn-ghost" onClick={() => begin("pricing_free")}>Begin</button>
-            </div>
-            <div className="lp-price lp-price-pro">
-              <div className="lp-price-name">Pro</div>
-              <div className="lp-price-amt">₹999<span>/mo</span></div>
-              <ul>
-                <li><IconCheck /> Everything in Free</li>
-                <li><IconCheck /> Advanced areas: data analysis, reconciliation, projections</li>
-                <li><IconCheck /> Unlimited checks</li>
-              </ul>
-              <button className="lp-btn" onClick={() => begin("pricing_pro")}>Begin</button>
-            </div>
           </div>
         </div>
       </section>

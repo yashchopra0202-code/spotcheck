@@ -210,9 +210,9 @@ html,body{overflow-x:clip}
 /* grid/flex children default to min-width:auto and refuse to shrink below their content,
    which overflows a phone viewport — let them shrink so text wraps instead. */
 .lp-card,.lp-mini{max-width:100%}
-.lp-hero-copy,.lp-hero-art,.lp-feat-copy,.lp-feat-art,.lp-steps>li,.lp-dim,.lp-price,.lp-shot-row,.lp-jrow{min-width:0}
+.lp-hero-copy,.lp-hero-art,.lp-feat-copy,.lp-feat-art,.lp-steps>li,.lp-dim,.lp-shot-row,.lp-jrow{min-width:0}
 /* implicit `auto` grid tracks size to content and overflow a phone; force shrinkable tracks */
-.lp-hero-in,.lp-feat,.lp-steps,.lp-dims,.lp-prices{grid-template-columns:minmax(0,1fr)}
+.lp-hero-in,.lp-feat,.lp-steps,.lp-dims{grid-template-columns:minmax(0,1fr)}
 .lp-wrap{width:100%;max-width:1080px;margin:0 auto;padding:0 22px}
 .lp-narrow{max-width:720px}
 .lp h1,.lp h2,.lp h3{margin:0;letter-spacing:-.03em;line-height:1.08;text-wrap:balance}
@@ -309,18 +309,6 @@ html,body{overflow-x:clip}
 .lp-dim b{font-size:14.5px;color:var(--text);font-weight:650}
 .lp-dim p{margin-top:3px;font-size:13px;color:var(--muted);line-height:1.5}
 
-/* pricing */
-.lp-prices{margin-top:clamp(28px,5vw,42px);display:grid;gap:18px}
-.lp-price{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px}
-.lp-price-pro{border-color:color-mix(in srgb,var(--brand) 55%,var(--line));box-shadow:0 24px 50px -26px color-mix(in srgb,var(--brand) 60%,transparent)}
-.lp-price-name{font-size:14px;font-weight:700;color:var(--text)}
-.lp-price-amt{font-size:2.6rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin:6px 0 18px;font-variant-numeric:tabular-nums}
-.lp-price-amt span{font-size:1rem;font-weight:600;color:var(--faint)}
-.lp-price ul{list-style:none;margin:0 0 22px;padding:0;display:grid;gap:11px}
-.lp-price li{display:flex;align-items:flex-start;gap:9px;font-size:13.5px;color:var(--muted);line-height:1.45}
-.lp-price li svg{color:var(--brand);flex:none;margin-top:1px}
-.lp-price .lp-btn,.lp-price .lp-btn-ghost{width:100%}
-
 /* faq */
 .lp-faq{margin-top:clamp(24px,4vw,36px);border-top:1px solid var(--line)}
 .lp-faq details{border-bottom:1px solid var(--line)}
@@ -357,7 +345,6 @@ html,body{overflow-x:clip}
   .lp-nav-links{display:flex}
   .lp-steps{grid-template-columns:repeat(3,1fr);gap:30px}
   .lp-dims{grid-template-columns:1fr 1fr;gap:20px 40px}
-  .lp-prices{grid-template-columns:1fr 1fr;gap:22px}
   .lp-faq p{padding-right:40px}
 }
 @media (min-width:900px){
