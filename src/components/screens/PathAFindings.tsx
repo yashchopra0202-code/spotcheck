@@ -1,8 +1,10 @@
 "use client";
 import { useFunnel } from "@/components/FunnelProvider";
+import { judgmentMap } from "@/lib/funnel";
+import { track } from "@/lib/analytics";
 
 export default function PathAFindings() {
-  const { check, go } = useFunnel();
+  const { check, checks, go } = useFunnel();
   if (!check) {
     // Guard: reached without a result (e.g. reload). Send back to upload.
     return (
@@ -14,6 +16,16 @@ export default function PathAFindings() {
   }
   const { result } = check;
   const failedCore = result.dimensions.filter((d) => !d.pass);
+
+  // Co-pilot panel: a running judgment map across every output checked this session.
+  const map = judgmentMap(checks);
+  const n = checks.length;
+
+  function checkAnother() {
+    track("check_another", { checks_so_far: n });
+    go("a_upload");
+  }
+
   return (
     <div className="pad screen">
       <span className="pathtag a">PATH A</span>
@@ -32,7 +44,27 @@ export default function PathAFindings() {
         <div className="finding ok">✓ Looks trustworthy — the core checks pass.</div>
       )}
       <div className="finding ok">✓ Fix: {result.one_fix}</div>
-      <button className="cta" style={{ marginTop: 20 }} onClick={() => go("a_concepts")}>Why did this happen? →</button>
+
+      {/* Persistent judgment-map rail — accumulates as the user checks more outputs. */}
+      <div className="jmap">
+        <div className="jmap-hd">
+          <b>Your judgment map</b>
+          <span className="note" style={{ margin: 0 }}>{n} check{n === 1 ? "" : "s"} this session</span>
+        </div>
+        {map.map((c) => {
+          const state = c.fails === 0 ? "pass" : c.fails === c.total ? "fail" : "mixed";
+          return (
+            <div key={c.name} className="jmap-row">
+              <span className={`jdot ${state}`} aria-hidden="true" />
+              <span className="jname">{c.name}{c.core ? "" : " ·"}</span>
+              <span className="jtally note" style={{ margin: 0 }}>{c.passes}/{c.total} clear</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <button className="ghost" style={{ marginTop: 10 }} onClick={checkAnother}>+ Check another output</button>
+      <button className="cta" onClick={() => go("a_concepts")}>Why did this happen? →</button>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 // Pure funnel logic + static content. No React, no I/O — unit-tested.
 
+import { DIMENSIONS } from "./rubric";
+
 export type Step =
   | "welcome" | "role" | "comfort" | "focus" | "pace" | "roadmap" | "fork"
-  | "a_upload" | "a_findings" | "a_concepts" | "test" | "email" | "done";
+  | "a_preflight" | "a_upload" | "a_findings" | "a_concepts" | "test" | "results" | "email" | "done" | "drill";
 
 export type Role =
   | "FP&A / Financial Analyst" | "Accountant / Controller"
@@ -22,10 +24,11 @@ export type FunnelState = {
   focusOther: string | null; // free-text when the user picks "Other"
   pace: Pace;
   email: string;
+  preflightTask: string | null; // the task the user described on the pre-flight coach, carried into the check
 };
 
 export function initialState(): FunnelState {
-  return { step: "welcome", role: null, tenure: null, comfort: null, focus: null, focusOther: null, pace: "steady", email: "" };
+  return { step: "welcome", role: null, tenure: null, comfort: null, focus: null, focusOther: null, pace: "steady", email: "", preflightTask: null };
 }
 
 // The focus to show/use downstream: a chosen area, else the "Other" free text.
@@ -152,4 +155,40 @@ export const TEST_QUESTIONS: TestQuestion[] = [
 
 export function scoreAnswers(correct: boolean[]): number {
   return correct.filter(Boolean).length;
+}
+
+// The achievement unlocked at the results screen — milestone framing, not points/streaks
+// (survey: only 8% want those). Higher score = a sharper badge.
+export type Badge = { emoji: string; name: string; blurb: string };
+export function testBadge(score: number, total: number): Badge {
+  const ratio = total > 0 ? score / total : 0;
+  if (ratio >= 0.8) return { emoji: "🎯", name: "Sharp Eye", blurb: "You catch what most people ship by mistake." };
+  if (ratio >= 0.5) return { emoji: "🛡️", name: "Solid Instinct", blurb: "A dependable baseline — a few dimensions left to master." };
+  return { emoji: "🌱", name: "Calibrating", blurb: "Now you know where the gaps are — that's the whole point." };
+}
+
+// --- Co-pilot panel (Moment 2): a running judgment map across the session's checks ---
+// One record per output the user checked. `missed_dims` are the rubric dimensions
+// that failed (the critique always returns all 7, so a dim not listed here passed).
+export type CheckRecord = { task: string; trustworthy: boolean; missed_dims: string[]; ts: number };
+
+// Per-dimension tally across every check run this session. Drives the panel rail and
+// (in Phase C) feeds the adaptive drill toward the dimensions the user misses most.
+export type JudgmentCell = { name: string; core: boolean; total: number; passes: number; fails: number };
+
+export function judgmentMap(checks: CheckRecord[]): JudgmentCell[] {
+  return DIMENSIONS.map((d) => {
+    const total = checks.length;
+    const fails = checks.filter((c) => c.missed_dims.includes(d.name)).length;
+    return { name: d.name, core: d.core, total, passes: total - fails, fails };
+  });
+}
+
+// The dimensions the user misses most, worst-first (ties broken by rubric order).
+// Empty list in, empty list out. Used by the panel summary and the drill selector.
+export function weakestDimensions(checks: CheckRecord[]): string[] {
+  return judgmentMap(checks)
+    .filter((c) => c.fails > 0)
+    .sort((a, b) => b.fails - a.fails)
+    .map((c) => c.name);
 }

@@ -8,7 +8,7 @@ import { saveCheck } from "@/lib/supabase";
 import { summarizeRows, type Cell } from "@/lib/spreadsheet";
 
 export default function PathAUpload() {
-  const { state, go, userId, setCheck } = useFunnel();
+  const { state, go, userId, setCheck, addCheck } = useFunnel();
   const [paste, setPaste] = useState("");
   const [fileName, setFileName] = useState("");
   const [checkOpt, setCheckOpt] = useState(CHECK_OPTIONS[0]);
@@ -25,6 +25,9 @@ export default function PathAUpload() {
   // File upload is offered only for spreadsheet work; other modes are paste-only.
   const canUpload = state.focus === "Spreadsheet work";
   const isFormula = state.focus === "Formula correction";
+  // Arrived from the pre-flight coach: we already know the task, so continue that
+  // thread instead of re-asking. (Formula mode keeps its own fixed task.)
+  const fromPreflight = !isFormula && !!state.preflightTask?.trim();
 
   // Parse the uploaded file to text/values client-side (stays private) and drop it
   // into the box so the user sees exactly what Gemini will check. .xlsx/.xls are
@@ -73,7 +76,11 @@ export default function PathAUpload() {
   const FORMULA_TASK = "Check this AI-written finance formula: verify the ranges, criteria, and logic; flag any error; and give the corrected formula.";
   const taskLabel = isFormula
     ? FORMULA_TASK
+    : fromPreflight
+    ? `Check the AI's output for this task: "${state.preflightTask}". Judge whether it is trustworthy to ship and flag anything wrong.`
     : `Check this AI-assisted finance work, focusing especially on: ${checkOpt.toLowerCase()}.`;
+  // A short label for storage/history — the pre-flight task when we have it.
+  const taskName = isFormula ? "Formula correction" : fromPreflight ? state.preflightTask!.slice(0, 80) : checkOpt;
 
   async function run() {
     if (!paste.trim() || busy) return;
@@ -81,14 +88,16 @@ export default function PathAUpload() {
     track("apply_to_work_used", { task_type: taskType, mode: isFormula ? "formula" : "work" });
     const focus = effectiveFocus(state);
     const result = await runCheck({ task: taskLabel, output: paste, focus: focus ?? undefined });
-    setCheck({ task: isFormula ? "Formula correction" : checkOpt, paste, taskType, result });
+    const missed = result.dimensions.filter((d) => !d.pass).map((d) => d.name);
+    setCheck({ task: taskName, paste, taskType, result });
+    addCheck({ task: taskName, trustworthy: result.trustworthy, missed_dims: missed, ts: Date.now() });
     saveCheck({
       user_id: userId,
-      task: isFormula ? "Formula correction" : checkOpt,
+      task: taskName,
       paste,
       focus,
       trustworthy: result.trustworthy,
-      missed_dims: result.dimensions.filter((d) => !d.pass).map((d) => d.name),
+      missed_dims: missed,
       result_json: result,
     });
     track("check_completed", { trustworthy: result.trustworthy });
@@ -98,8 +107,11 @@ export default function PathAUpload() {
 
   return (
     <div className="pad screen">
-      <span className="pathtag a">PATH A · REAL PROBLEM</span>
-      <h2 className="title" style={{ fontSize: 20 }}>{isFormula ? "Bring the formula to check" : "Bring the work you want checked"}</h2>
+      <span className="pathtag a">PATH A · {fromPreflight ? "CHECK THE OUTPUT" : "REAL PROBLEM"}</span>
+      <h2 className="title" style={{ fontSize: 20 }}>{isFormula ? "Bring the formula to check" : fromPreflight ? "Paste what AI gave you" : "Bring the work you want checked"}</h2>
+      {fromPreflight ? (
+        <div className="lossnote" style={{ margin: "8px 0 4px" }}><b>For:</b> {state.preflightTask}</div>
+      ) : null}
       {canUpload ? (
         <>
           <p className="note" style={{ margin: "2px 0 10px" }}>Upload your spreadsheet or paste values · <span style={{ color: "var(--faint)" }}>PDF coming soon</span></p>
@@ -111,13 +123,15 @@ export default function PathAUpload() {
             <input ref={fileInput} type="file" accept=".xlsx,.xls,.csv,.txt" hidden onChange={onFile} />
           </div>
           {fileName && !fileErr ? <div className="filechip"><span className="x">✓</span> {fileName} — {summarized ? "summarized below (large sheet)" : "values loaded below"}</div> : null}
-          {summarized ? <p className="note" style={{ margin: "2px 0 0" }}>Large file — we sent Gemini a structured summary (shape, per-column totals, sample rows) instead of every row, so the check stays fast and cheap.</p> : null}
+          {summarized ? <p className="note" style={{ margin: "2px 0 0" }}>Large file — we sent the AI a structured summary (shape, per-column totals, sample rows) instead of every row, so the check stays fast and cheap.</p> : null}
           {fileErr ? <div className="finding warn" style={{ marginTop: 8 }}>⚠️ {fileErr}</div> : null}
         </>
       ) : null}
       <textarea className="field" style={{ minHeight: 120, resize: "vertical", marginTop: canUpload ? undefined : 8 }} placeholder={isFormula ? "Paste the AI-written formula, e.g. =SUMIF(A:A,\"West\",B:B)…" : "Paste the AI's answer, formula, or cleaned data here…"} value={paste} onChange={(e) => setPaste(e.target.value)} />
       {isFormula ? (
-        <p className="note" style={{ margin: "2px 0 4px" }}>Gemini will verify the ranges, criteria &amp; logic and return the corrected formula.</p>
+        <p className="note" style={{ margin: "2px 0 4px" }}>Your AI coach will verify the ranges, criteria &amp; logic and return the corrected formula.</p>
+      ) : fromPreflight ? (
+        <p className="note" style={{ margin: "2px 0 4px" }}>Your coach already knows the task — it&apos;ll check this output against all 7 trust dimensions.</p>
       ) : (
         <>
           <div className="selectlbl">What should your coach check?</div>
@@ -136,7 +150,7 @@ export default function PathAUpload() {
         <button type="button" className={taskType === "scratch" ? "on" : ""} onClick={() => setTaskType("scratch")}>Just testing</button>
       </div>
       <button className="cta" style={{ marginTop: 20 }} disabled={!paste.trim() || busy} onClick={run}>
-        {busy ? "Checking with Gemini…" : isFormula ? "Check the formula with Gemini ✦" : "Run the check with Gemini ✦"}
+        {busy ? "Checking with AI…" : isFormula ? "Check the formula with AI ✦" : "Run the check with AI ✦"}
       </button>
       <p className="note" style={{ textAlign: "center" }}>🔒 Your paste is used only to run this check.</p>
     </div>

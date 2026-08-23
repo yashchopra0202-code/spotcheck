@@ -4,10 +4,10 @@ import { useFunnel } from "@/components/FunnelProvider";
 import { TEST_QUESTIONS, scoreAnswers } from "@/lib/funnel";
 import { track } from "@/lib/analytics";
 
-type Phase = "asking" | "decide" | "done";
+type Phase = "asking" | "decide";
 
 export default function Test() {
-  const { go } = useFunnel();
+  const { go, setTestResult } = useFunnel();
   const [idx, setIdx] = useState(0);
   const [results, setResults] = useState<boolean[]>([]);
   const [picked, setPicked] = useState<number | null>(null);
@@ -36,19 +36,9 @@ export default function Test() {
   function contMore() { setPhase("asking"); setIdx(3); }
 
   function finish() {
-    setPhase("done");
+    setTestResult({ score, total: answered });
     track("test_completed", { score, answered });
-  }
-
-  if (phase === "done") {
-    return (
-      <div className="pad screen">
-        <div className="eyebrow">Test your AI capability</div>
-        <div className="scorebig"><div className="v">{score}<small>/{answered}</small></div></div>
-        <p className="sub" style={{ textAlign: "center" }}>A sharp starting line — this is where your judgment begins, with room to climb.</p>
-        <button className="cta" style={{ marginTop: 20 }} onClick={() => go("email")}>Continue →</button>
-      </div>
-    );
+    go("results");
   }
 
   if (phase === "decide") {
