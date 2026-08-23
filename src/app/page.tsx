@@ -4,6 +4,7 @@ import FunnelProvider, { useFunnel } from "@/components/FunnelProvider";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import { track } from "@/lib/analytics";
 import Welcome from "@/components/screens/Welcome";
+import Landing from "@/components/screens/Landing";
 import Role from "@/components/screens/Role";
 import Comfort from "@/components/screens/Comfort";
 import Focus from "@/components/screens/Focus";
@@ -37,11 +38,14 @@ function stageIndex(step: string): number {
 function Funnel() {
   const { state, back, canGoBack, go, theme } = useFunnel();
   const cur = stageIndex(state.step);
+  // The landing page is the full-width front door; "Begin" drops into onboarding.
+  if (state.step === "welcome") {
+    return <Landing onBegin={() => go("role")} />;
+  }
   // Back is available everywhere it can unwind, except the terminal "done" screen.
   const showBack = canGoBack && state.step !== "done";
   const screen = (() => {
     switch (state.step) {
-      case "welcome": return <Welcome />;
       case "role": return <Role />;
       case "comfort": return <Comfort />;
       case "focus": return <Focus />;
@@ -70,9 +74,7 @@ function Funnel() {
             {showBack ? (
               <button className="backbtn" onClick={back} aria-label="Go back">‹ Back</button>
             ) : null}
-            {state.step !== "welcome" ? (
-              <button className="backbtn" onClick={() => { track("home_clicked", { from: state.step }); go("welcome"); }} aria-label="Home">⌂ Home</button>
-            ) : null}
+            <button className="backbtn" onClick={() => { track("home_clicked", { from: state.step }); go("welcome"); }} aria-label="Home">⌂ Home</button>
           </div>
           <div className="tb-right">
             <div className="dots" aria-hidden="true">
