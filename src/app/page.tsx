@@ -2,6 +2,7 @@
 
 import FunnelProvider, { useFunnel } from "@/components/FunnelProvider";
 import ThemeSwitch from "@/components/ThemeSwitch";
+import { track } from "@/lib/analytics";
 import Welcome from "@/components/screens/Welcome";
 import Role from "@/components/screens/Role";
 import Comfort from "@/components/screens/Comfort";
@@ -34,7 +35,7 @@ function stageIndex(step: string): number {
 }
 
 function Funnel() {
-  const { state, back, canGoBack, theme } = useFunnel();
+  const { state, back, canGoBack, go, theme } = useFunnel();
   const cur = stageIndex(state.step);
   // Back is available everywhere it can unwind, except the terminal "done" screen.
   const showBack = canGoBack && state.step !== "done";
@@ -68,6 +69,9 @@ function Funnel() {
             <span className="brandlogo tb-logo"><span className="mk" /><span className="wm">Spot<span>Check</span></span></span>
             {showBack ? (
               <button className="backbtn" onClick={back} aria-label="Go back">‹ Back</button>
+            ) : null}
+            {state.step !== "welcome" ? (
+              <button className="backbtn" onClick={() => { track("home_clicked", { from: state.step }); go("welcome"); }} aria-label="Home">⌂ Home</button>
             ) : null}
           </div>
           <div className="tb-right">
