@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SpotCheck — Trust what AI does with your numbers",
-  description: "A guest-first Gemini coach that gets finance pros good at trusting and fixing their AI-assisted work.",
+  description: "A guest-first AI coach that gets finance pros good at trusting and fixing their AI-assisted work.",
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };

@@ -1,4 +1,4 @@
-:root { color-scheme: light; }
+:root { color-scheme: dark; background: #0E131C; }
 
 /* Theme tokens — ported verbatim from V3 prototype. Applied via [data-theme] on .app. */
 [data-theme="light"]{--surface:#FFFFFF;--wash:#F6F8FB;--sel:#F0FAF6;--text:#0F1729;--muted:#5B6473;--faint:#8A93A3;--line:#E7EAF0;--brand:#0E7C66;--good:#12B981;--watch:#F4A100;--coach:#3E63DD;--good-ink:#0A6B53;--watch-ink:#8A5A00;--coach-ink:#33478A;--code:#0C1526;--code-tx:#D7E0EE}

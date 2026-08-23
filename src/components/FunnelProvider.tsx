@@ -39,7 +39,7 @@ export default function FunnelProvider({ children }: { children: React.ReactNode
   const [check, setCheck] = useState<{ task: string; paste: string; result: Critique } | null>(null);
   const [checks, setChecks] = useState<CheckRecord[]>([]);
   const [history, setHistory] = useState<Step[]>([]);
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
   const hydrated = useRef(false);
 
   // Hydrate from localStorage + set up analytics/anon id once.
