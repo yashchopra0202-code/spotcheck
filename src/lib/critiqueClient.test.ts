@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { runCheck, FALLBACK_CRITIQUE } from "./critiqueClient";
-import type { Critique } from "./gemini";
+import type { Critique } from "./critique";
 
 const VALID_CRITIQUE: Critique = {
   summary: "Looks solid overall.",

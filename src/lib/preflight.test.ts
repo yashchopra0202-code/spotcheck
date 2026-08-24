@@ -15,7 +15,7 @@ describe("parsePreflight", () => {
     expect(parsePreflight(JSON.stringify(VALID))).toEqual(VALID);
   });
 
-  it("recovers when Gemini emits a raw control character inside a string value", () => {
+  it("recovers when the model emits a raw control character inside a string value", () => {
     // A literal newline inside hardened_prompt makes this invalid JSON; strict
     // JSON.parse throws, and parsePreflight must recover instead of failing.
     const withRawNewline =

@@ -8,7 +8,7 @@ describe("parseConcepts", () => {
     expect(parseConcepts(JSON.stringify(VALID))).toEqual(VALID);
   });
 
-  it("recovers when Gemini emits a raw control character inside a string value", () => {
+  it("recovers when the model emits a raw control character inside a string value", () => {
     const withRawNewline = '{"concepts":[{"title":"one\ntwo","body":"do x"}]}';
     expect(() => JSON.parse(withRawNewline)).toThrow();
     const out = parseConcepts(withRawNewline);

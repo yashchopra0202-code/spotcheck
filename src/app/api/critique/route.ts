@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { critique } from "@/lib/gemini";
+import { critique } from "@/lib/critique";
 
 // Runs on the Node runtime so it can read the server-only ANTHROPIC_API_KEY.
 export const runtime = "nodejs";

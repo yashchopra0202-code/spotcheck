@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { FunnelState, Step, CheckRecord, initialState, effectiveFocus } from "@/lib/funnel";
 import { getUserId, initAnalytics, track } from "@/lib/analytics";
 import { saveProfile } from "@/lib/supabase";
-import type { Critique } from "@/lib/gemini";
+import type { Critique } from "@/lib/critique";
 
 export type Theme = "light" | "dark" | "indigo";
 

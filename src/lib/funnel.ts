@@ -53,7 +53,7 @@ export const COMFORT_OPTIONS: { value: Comfort; label: string }[] = [
   { value: "builder", label: "I build prompts others use" },
 ];
 
-// MVP-active options let the user paste/upload real work for a live Gemini check.
+// MVP-active options let the user paste/upload real work for a live Claude check.
 // `pro` options are shown as a fake-door (grayed, "PRO") to measure willingness-to-pay.
 export const FOCUS_OPTIONS: { value: Focus; emoji: string; sub?: string; pro?: boolean }[] = [
   { value: "Spreadsheet work", emoji: "📊", sub: "Formulas, cleanup, models — paste or upload" },

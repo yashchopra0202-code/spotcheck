@@ -1,7 +1,7 @@
-// Compact, bounded summary of a spreadsheet for the Gemini check.
+// Compact, bounded summary of a spreadsheet for the Claude check.
 // Sending a structured summary (shape, per-column stats, a few sample rows)
 // instead of a raw dump keeps token cost flat regardless of file size AND gives
-// a better check — Gemini reasons about structure, not truncated rows.
+// a better check — the model reasons about structure, not truncated rows.
 
 export type Cell = string | number | boolean | null | undefined;
 

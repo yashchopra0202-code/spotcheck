@@ -1,5 +1,5 @@
 // Server-side welcome email via Brevo (transactional email API). Never import
-// from client code — it reads the secret BREVO_API_KEY. Mirrors the gemini.ts
+// from client code — it reads the secret BREVO_API_KEY. Mirrors the critique.ts
 // pattern: if the key/sender isn't set, this no-ops gracefully so the funnel
 // never breaks.
 //
