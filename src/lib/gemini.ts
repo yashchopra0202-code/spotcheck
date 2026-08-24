@@ -1,7 +1,9 @@
-// Server-side Gemini critique — the product's core logic (proven in Phase 0).
+// Server-side Claude critique — the product's core logic.
 // Never import this from client code; it reads the secret key.
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+import Anthropic from "@anthropic-ai/sdk";
+
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
 
 const SYSTEM = `You are a finance AI-judgment coach. A finance professional asked an AI tool to do a task and got an output. Judge whether that output is TRUSTWORTHY enough to ship, using this 7-dimension rubric:
 
@@ -38,11 +40,8 @@ const SCHEMA = {
 export type Dimension = { name: string; pass: boolean; note: string };
 export type Critique = { summary: string; trustworthy: boolean; dimensions: Dimension[]; one_fix: string };
 
-// Gemini's structured output occasionally contains raw (unescaped) control
-// characters inside string values, which makes strict JSON.parse throw. Parse
-// as-is first; on failure, replace raw control bytes (0x00–0x1F) with a space
-// — valid whether they were structural whitespace or illegal in-string chars —
-// and retry once. If it still fails, throw so the caller uses the fallback.
+// Kept for the unit test; the live path reads the validated tool input directly,
+// so no manual JSON parsing is needed.
 export function parseCritique(text: string): Critique {
   try {
     return JSON.parse(text) as Critique;
@@ -52,37 +51,22 @@ export function parseCritique(text: string): Critique {
 }
 
 export async function critique(task: string, output: string, focus?: string): Promise<Critique> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY is not set");
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
+  const client = new Anthropic();
 
   const focusLine = focus ? `\nThe user is focused on: ${focus}.` : "";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`;
-  const body = {
-    systemInstruction: { parts: [{ text: SYSTEM }] },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `TASK the user asked AI to do:\n${task}${focusLine}\n\nAI OUTPUT:\n${output}\n\nJudge it against the rubric.` }],
-      },
-    ],
-    generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.2, thinkingConfig: { thinkingLevel: "low" } },
-  };
+  const userText = `TASK the user asked AI to do:\n${task}${focusLine}\n\nAI OUTPUT:\n${output}\n\nJudge it against the rubric.`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000);
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
-    const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Gemini returned no content");
-    return parseCritique(text);
-  } finally {
-    clearTimeout(timeout);
-  }
+  const res = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    system: SYSTEM,
+    messages: [{ role: "user", content: userText }],
+    tools: [{ name: "emit_critique", description: "Return the structured trust judgment.", input_schema: SCHEMA as Anthropic.Tool.InputSchema }],
+    tool_choice: { type: "tool", name: "emit_critique" },
+  });
+
+  const block = res.content.find((b) => b.type === "tool_use");
+  if (!block || block.type !== "tool_use") throw new Error("Claude returned no structured result");
+  return block.input as Critique;
 }

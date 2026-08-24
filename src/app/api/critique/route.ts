@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { critique } from "@/lib/gemini";
 
-// Runs on the Node runtime so it can read the server-only GEMINI_API_KEY.
+// Runs on the Node runtime so it can read the server-only ANTHROPIC_API_KEY.
 export const runtime = "nodejs";
 export const maxDuration = 60;
 

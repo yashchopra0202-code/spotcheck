@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "@supabase/supabase-js": "^2.112.3",
     "next": "16.3.1",
     "posthog-js": "^1.418.6",

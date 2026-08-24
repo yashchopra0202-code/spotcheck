@@ -1,4 +1,4 @@
-// Server-side Gemini "pre-flight" prompt coach — Moment 1 of the real-work co-pilot.
+// Server-side Claude "pre-flight" prompt coach — Moment 1 of the real-work co-pilot.
 // Coaches the INPUT before the user runs AI: names the assumptions to pin down and
 // hands back a rubric-hardened prompt to run in their OWN tool.
 // Never import this from client code; it reads the secret key.
@@ -8,7 +8,9 @@
 // and the questions to pin down. This is what keeps SpotCheck a coach, not a worse
 // ChatGPT. See "Phase 2 - Real-Work Co-Pilot Direction" in the vault.
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+import Anthropic from "@anthropic-ai/sdk";
+
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
 
 const SYSTEM = `You are a finance AI-judgment coach. A finance professional is ABOUT to ask an AI tool to do a task. Your job is to make them wield the AI well — you do NOT do the task, and you never produce the answer, the numbers, the formula, or the finished output.
 
@@ -50,10 +52,7 @@ const SCHEMA = {
 export type Assumption = { dimension: string; question: string };
 export type Preflight = { assumptions_to_pin: Assumption[]; hardened_prompt: string; post_checks: string[] };
 
-// Gemini's structured output occasionally contains raw (unescaped) control
-// characters inside string values, which makes strict JSON.parse throw. Parse
-// as-is first; on failure, replace raw control bytes (0x00–0x1F) with a space
-// and retry once. If it still fails, throw so the caller uses the fallback.
+// Kept for the unit test; the live path reads the validated tool input directly.
 export function parsePreflight(text: string): Preflight {
   try {
     return JSON.parse(text) as Preflight;
@@ -63,37 +62,22 @@ export function parsePreflight(text: string): Preflight {
 }
 
 export async function preflight(task: string, focus?: string): Promise<Preflight> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY is not set");
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
+  const client = new Anthropic();
 
   const focusLine = focus ? `\nThe user is focused on: ${focus}.` : "";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`;
-  const body = {
-    systemInstruction: { parts: [{ text: SYSTEM }] },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `TASK the user is about to ask AI to do:\n${task}${focusLine}\n\nCoach the input. Do NOT do the task.` }],
-      },
-    ],
-    generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.2, thinkingConfig: { thinkingLevel: "low" } },
-  };
+  const userText = `TASK the user is about to ask AI to do:\n${task}${focusLine}\n\nCoach the input. Do NOT do the task.`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000);
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
-    const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Gemini returned no content");
-    return parsePreflight(text);
-  } finally {
-    clearTimeout(timeout);
-  }
+  const res = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    system: SYSTEM,
+    messages: [{ role: "user", content: userText }],
+    tools: [{ name: "emit_preflight", description: "Return the coached prompt and assumptions.", input_schema: SCHEMA as Anthropic.Tool.InputSchema }],
+    tool_choice: { type: "tool", name: "emit_preflight" },
+  });
+
+  const block = res.content.find((b) => b.type === "tool_use");
+  if (!block || block.type !== "tool_use") throw new Error("Claude returned no structured result");
+  return block.input as Preflight;
 }

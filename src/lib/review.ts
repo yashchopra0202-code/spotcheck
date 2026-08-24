@@ -1,9 +1,11 @@
-// Server-side "Mock Review" — an AI that plays a skeptical finance manager and
+// Server-side "Mock Review" — a Claude model that plays a skeptical finance manager and
 // pressure-tests whether the user can defend their AI-assisted work WITHOUT the AI.
 // Directly serves the persona's deepest fear (PP3: collapsing when checked). Turn-based,
 // capped at 3 questions, ending in a verdict. Never import from client code.
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+import Anthropic from "@anthropic-ai/sdk";
+
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
 
 const SYSTEM = `You are a skeptical but fair finance manager doing a quick review of a piece of AI-assisted work a team member produced. Your goal: pressure-test whether they truly understand it and could defend it WITHOUT the AI — the way a real review or interview would. Concentrate your probing on the rubric dimensions that FAILED the check.
 
@@ -27,6 +29,7 @@ const SCHEMA = {
 export type ReviewTurn = { role: "reviewer" | "user"; text: string };
 export type ReviewReply = { reply: string; done: boolean; verdict: string };
 
+// Kept for the unit test; the live path reads the validated tool input directly.
 export function parseReview(text: string): ReviewReply {
   try {
     return JSON.parse(text) as ReviewReply;
@@ -42,31 +45,24 @@ export async function review(
   transcript: ReviewTurn[],
   questionsAsked: number,
 ): Promise<ReviewReply> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY is not set");
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
+  const client = new Anthropic();
 
   const tx = transcript.length
     ? transcript.map((t) => `${t.role === "reviewer" ? "MANAGER" : "THEM"}: ${t.text}`).join("\n")
     : "(no exchange yet — ask your first question)";
-  const userText = `Work under review — task: "${task}"\n\nThe work:\n${work}\n\nWhat the check flagged (probe these):\n${weaknesses || "nothing major failed — probe whether they can reproduce and defend the result"}\n\nQuestions asked so far: ${questionsAsked} of 3.\n\nTranscript:\n${tx}\n\nReturn the next manager turn as JSON.`;
+  const userText = `Work under review — task: "${task}"\n\nThe work:\n${work}\n\nWhat the check flagged (probe these):\n${weaknesses || "nothing major failed — probe whether they can reproduce and defend the result"}\n\nQuestions asked so far: ${questionsAsked} of 3.\n\nTranscript:\n${tx}\n\nReturn the next manager turn.`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`;
-  const body = {
-    systemInstruction: { parts: [{ text: SYSTEM }] },
-    contents: [{ role: "user", parts: [{ text: userText }] }],
-    generationConfig: { responseMimeType: "application/json", responseSchema: SCHEMA, temperature: 0.4, thinkingConfig: { thinkingLevel: "low" } },
-  };
+  const res = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    system: SYSTEM,
+    messages: [{ role: "user", content: userText }],
+    tools: [{ name: "emit_turn", description: "Return the manager's next question or the final verdict.", input_schema: SCHEMA as Anthropic.Tool.InputSchema }],
+    tool_choice: { type: "tool", name: "emit_turn" },
+  });
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000);
-  try {
-    const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal });
-    if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${await res.text()}`);
-    const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Gemini returned no content");
-    return parseReview(text);
-  } finally {
-    clearTimeout(timeout);
-  }
+  const block = res.content.find((b) => b.type === "tool_use");
+  if (!block || block.type !== "tool_use") throw new Error("Claude returned no structured result");
+  return block.input as ReviewReply;
 }
