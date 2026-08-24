@@ -32,10 +32,22 @@ create table if not exists public.signals (
   created_at timestamptz not null default now()
 );
 
+-- One-tap experience rating captured on the final (Done) screen. checks_count lets us
+-- segment satisfaction by how much the user actually used the product.
+create table if not exists public.ratings (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      text not null,
+  rating       int  not null check (rating between 1 and 5),
+  checks_count int  not null default 0,
+  email        text,                 -- captured with the rating for follow-up
+  created_at   timestamptz not null default now()
+);
+
 -- MVP: allow the anon public key to insert (and upsert its own profile)
 alter table public.profiles enable row level security;
 alter table public.checks   enable row level security;
 alter table public.signals  enable row level security;
+alter table public.ratings  enable row level security;
 
 -- Idempotent cleanup so re-running this file removes anon SELECT from a live DB.
 drop policy if exists "anon read profiles" on public.profiles;
@@ -46,6 +58,7 @@ create policy "anon insert profiles" on public.profiles for insert to anon with 
 create policy "anon upsert profiles" on public.profiles for update to anon using (true) with check (true);
 create policy "anon insert checks"   on public.checks   for insert to anon with check (true);
 create policy "anon insert signals"  on public.signals  for insert to anon with check (true);
+create policy "anon insert ratings"  on public.ratings  for insert to anon with check (true);
 
 -- V3 Phase 1: onboarding pace + tenure
 alter table public.profiles add column if not exists tenure text;

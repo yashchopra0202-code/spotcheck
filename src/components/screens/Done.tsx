@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
 import { roadmapDays, effectiveFocus, weakestDimensions } from "@/lib/funnel";
 import { track } from "@/lib/analytics";
+import { saveRating } from "@/lib/supabase";
 
 export default function Done() {
-  const { state, check, checks, go } = useFunnel();
+  const { state, check, checks, go, userId } = useFunnel();
   const days = roadmapDays(state.pace);
   const ranCheck = !!check;
   const pct = ranCheck ? 15 : 10;
@@ -17,6 +18,8 @@ export default function Done() {
   // Animate the progress bar from 0 on mount; fire the hook-shown event once.
   const [fill, setFill] = useState(0);
   const [notified, setNotified] = useState(false);
+  const [rated, setRated] = useState(0);
+  const [hoverStar, setHoverStar] = useState(0);
   useEffect(() => {
     const t = setTimeout(() => setFill(pct), 160);
     track("daily_loop_shown", { dim: tomorrowDim });
@@ -26,6 +29,18 @@ export default function Done() {
   function remindMe() {
     setNotified(true);
     track("return_intent", { dim: tomorrowDim });
+  }
+
+  // One tap = submitted (no button — lowest friction on the last screen). Fires the
+  // PostHog event and writes to the ratings table; checks_count lets us segment
+  // satisfaction by usage. Silently no-ops if the DB/table isn't set up yet.
+  function rate(n: number) {
+    if (rated) return;
+    setRated(n);
+    const checks_count = checks.length;
+    const email = state.email?.trim() || null;
+    track("rating_submitted", { rating: n, checks_count, has_email: !!email });
+    saveRating({ user_id: userId, rating: n, checks_count, email });
   }
 
   return (
@@ -72,6 +87,32 @@ export default function Done() {
       <button className="ghost" onClick={remindMe} disabled={notified}>
         {notified ? "We'll nudge you daily ✓" : "🔔 Get a daily nudge"}
       </button>
+
+      {/* Experience rating — one tap, captured to PostHog + the ratings table. */}
+      <div className="rate">
+        {rated ? (
+          <p className="thanks">Thanks — that helps us make SpotCheck better. {"⭐".repeat(rated)}</p>
+        ) : (
+          <>
+            <div className="q">How was your experience?</div>
+            <div className="stars" role="radiogroup" aria-label="Rate your experience from 1 to 5 stars">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={n <= (hoverStar || rated) ? "on" : ""}
+                  aria-label={`${n} star${n === 1 ? "" : "s"}`}
+                  onMouseEnter={() => setHoverStar(n)}
+                  onMouseLeave={() => setHoverStar(0)}
+                  onClick={() => rate(n)}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

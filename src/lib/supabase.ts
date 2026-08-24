@@ -88,3 +88,17 @@ export async function saveSignal(row: SignalRow) {
     // ignore
   }
 }
+
+// One-tap experience rating from the final screen. Insert-only (no read-back), so it
+// uses a plain INSERT like checks/signals — needs the `ratings` table + anon-insert
+// policy from supabase-setup.sql (or scripts/add-ratings.sql) to persist.
+export type RatingRow = { user_id: string; rating: number; checks_count: number; email?: string | null };
+
+export async function saveRating(row: RatingRow) {
+  if (!supabase) return;
+  try {
+    await supabase.from("ratings").insert(row);
+  } catch {
+    // ignore
+  }
+}
