@@ -80,9 +80,16 @@ export default function PathAPreflight() {
           value={task}
           onChange={(e) => setTask(e.target.value)}
         />
-        <button className="cta" style={{ marginTop: 18 }} disabled={!task.trim() || busy} onClick={coach}>
-          {busy ? "Coaching your prompt…" : "Sharpen my prompt ✦"}
-        </button>
+        {busy ? (
+          <div className="thinkchip block" style={{ marginTop: 18 }} role="status" aria-live="polite">
+            <span className="tmk" aria-hidden="true" />
+            Coaching your prompt<span className="tdots"><i /><i /><i /></span>
+          </div>
+        ) : (
+          <button className="cta" style={{ marginTop: 18 }} disabled={!task.trim()} onClick={coach}>
+            Sharpen my prompt ✦
+          </button>
+        )}
         <p className="note" style={{ textAlign: "center" }}>🔒 Only used to coach this prompt — your coach never does the work for you.</p>
       </div>
     );
@@ -122,9 +129,16 @@ export default function PathAPreflight() {
           Then sanity-check: {result.post_checks.join(" · ")}
         </div>
       ) : null}
-      <button className="cta" style={{ marginTop: 18 }} disabled={!paste.trim() || checking} onClick={runTheCheck}>
-        {checking ? "Checking with AI…" : "Run the check with AI ✦"}
-      </button>
+      {checking ? (
+        <div className="thinkchip block" style={{ marginTop: 18 }} role="status" aria-live="polite">
+          <span className="tmk" aria-hidden="true" />
+          Checking your work<span className="tdots"><i /><i /><i /></span>
+        </div>
+      ) : (
+        <button className="cta" style={{ marginTop: 18 }} disabled={!paste.trim()} onClick={runTheCheck}>
+          Run the check with AI ✦
+        </button>
+      )}
       <p className="note" style={{ textAlign: "center" }}>🔒 Your paste is used only to run this check.</p>
     </div>
   );

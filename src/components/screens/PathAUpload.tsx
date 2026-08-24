@@ -18,7 +18,7 @@ export default function PathAUpload() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   // Small sheets go through verbatim (faithful); large ones are summarized so the
-  // token cost stays flat and Gemini reasons about structure, not a truncated dump.
+  // token cost stays flat and the model reasons about structure, not a truncated dump.
   const RAW_LIMIT = 4000;
 
   // File upload is offered only for spreadsheet work; other modes are paste-only.
@@ -29,7 +29,7 @@ export default function PathAUpload() {
   const fromPreflight = !isFormula && !!state.preflightTask?.trim();
 
   // Parse the uploaded file to text/values client-side (stays private) and drop it
-  // into the box so the user sees exactly what Gemini will check. .xlsx/.xls are
+  // into the box so the user sees exactly what the model will check. .xlsx/.xls are
   // parsed with SheetJS (lazy-loaded); .csv/.txt are read as text.
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -143,9 +143,16 @@ export default function PathAUpload() {
           </div>
         </>
       )}
-      <button className="cta" style={{ marginTop: 20 }} disabled={!paste.trim() || busy} onClick={run}>
-        {busy ? "Checking with AI…" : isFormula ? "Check the formula with AI ✦" : "Run the check with AI ✦"}
-      </button>
+      {busy ? (
+        <div className="thinkchip block" style={{ marginTop: 20 }} role="status" aria-live="polite">
+          <span className="tmk" aria-hidden="true" />
+          Checking your work<span className="tdots"><i /><i /><i /></span>
+        </div>
+      ) : (
+        <button className="cta" style={{ marginTop: 20 }} disabled={!paste.trim()} onClick={run}>
+          {isFormula ? "Check the formula with AI ✦" : "Run the check with AI ✦"}
+        </button>
+      )}
       <p className="note" style={{ textAlign: "center" }}>🔒 Your paste is used only to run this check.</p>
     </div>
   );

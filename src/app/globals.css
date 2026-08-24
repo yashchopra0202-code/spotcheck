@@ -356,6 +356,35 @@ html,body{overflow-x:clip}
 .concept .l{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coach-ink);font-weight:700;margin-bottom:4px}
 .concept b{font-size:14px;font-weight:600;color:var(--text)}.concept p{margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.5}
 
+/* "Thinking" state — animates the SpotCheck brand mark while Claude fetches from the API.
+   Theme-safe by construction: every colour is a CSS var, so it adapts to light/dark/indigo.
+   One shared mark, two presentations: .thinking (centred, replaces in-place content) and
+   .thinkchip (inline, replaces a CTA/loading affordance). */
+.tmk{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--brand),#0a5f4e);position:relative;flex:none;box-shadow:0 8px 22px -8px var(--brand);animation:thinkBreathe 1.7s ease-in-out infinite}
+.tmk::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-weight:800;font-size:23px}
+.tmk::before{content:"";position:absolute;inset:-1px;border-radius:14px;border:2px solid var(--brand);animation:thinkPulse 1.7s ease-out infinite}
+.tdots{display:inline-flex;gap:4px}
+.tdots i{width:5px;height:5px;border-radius:50%;background:var(--brand);display:block;animation:thinkDot 1.4s ease-in-out infinite}
+.tdots i:nth-child(2){animation-delay:.18s}
+.tdots i:nth-child(3){animation-delay:.36s}
+/* Centred — for screens where the fetched content renders in place (e.g. concept cards). */
+.thinking{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:44px 20px;text-align:center;animation:fade .3s ease}
+.thinking .tlabel{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--faint)}
+/* Inline chip — replaces the CTA/loading affordance on input & chat screens. */
+.thinkchip{display:inline-flex;align-items:center;gap:11px;padding:12px 15px;border:1px solid var(--line);border-radius:15px;background:var(--surface);color:var(--faint);font-size:14px;font-weight:600;animation:fade .3s ease}
+.thinkchip.block{display:flex;width:100%;justify-content:center}
+.thinkchip .tmk{width:26px;height:26px;border-radius:8px}
+.thinkchip .tmk::after{font-size:14px}
+.thinkchip .tmk::before{border-radius:9px;inset:-1px}
+@keyframes thinkBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes thinkPulse{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.55);opacity:0}}
+@keyframes thinkDot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+/* Respect users who ask for less motion — show the mark, drop the animation. */
+@media (prefers-reduced-motion: reduce){
+  .tmk,.tmk::before,.tdots i{animation:none}
+  .tmk::before{opacity:.4}
+}
+
 .field{width:100%;border:1.5px solid var(--line);border-radius:13px;padding:14px;font-size:15px;font-family:inherit;margin-bottom:10px;background:var(--surface);color:var(--text)}
 .field:focus{outline:0;border-color:var(--brand)}
 .lossnote{background:var(--wash);border-radius:13px;padding:13px;font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:14px}.lossnote b{color:var(--text)}

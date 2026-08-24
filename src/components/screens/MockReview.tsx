@@ -77,7 +77,12 @@ export default function MockReview() {
             <div key={i} className="umsg">{m.text}</div>
           ),
         )}
-        {phase === "loading" ? <div className="coachsay"><div className="g" /><div className="bub">…</div></div> : null}
+        {phase === "loading" ? (
+          <div className="thinkchip" style={{ marginTop: 6 }} role="status" aria-live="polite">
+            <span className="tmk" aria-hidden="true" />
+            Thinking<span className="tdots"><i /><i /><i /></span>
+          </div>
+        ) : null}
       </div>
 
       {phase === "done" ? (

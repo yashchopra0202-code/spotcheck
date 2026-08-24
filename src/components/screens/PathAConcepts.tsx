@@ -37,14 +37,20 @@ export default function PathAConcepts() {
     <div className="pad screen">
       <span className="pathtag a">PATH A · LEARN</span>
       <h2 className="title" style={{ fontSize: 20 }}>What just happened, explained</h2>
-      {tailoring ? <p className="note" style={{ margin: "4px 0 10px" }}>Tailoring these to your check…</p> : null}
-      {concepts.map((c, i) => (
-        <div key={i} className="concept">
-          <div className="l">Concept {i + 1}</div>
-          <b>{c.title}</b>
-          <p>{c.body}</p>
+      {tailoring ? (
+        <div className="thinking" role="status" aria-live="polite">
+          <span className="tmk" aria-hidden="true" />
+          <span className="tlabel">Tailoring these to your check<span className="tdots"><i /><i /><i /></span></span>
         </div>
-      ))}
+      ) : (
+        concepts.map((c, i) => (
+          <div key={i} className="concept">
+            <div className="l">Concept {i + 1}</div>
+            <b>{c.title}</b>
+            <p>{c.body}</p>
+          </div>
+        ))
+      )}
       <button className="cta" style={{ marginTop: 20 }} onClick={() => go("results")}>See where you stand →</button>
     </div>
   );
