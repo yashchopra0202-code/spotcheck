@@ -1,6 +1,7 @@
 // Pure funnel logic + static content. No React, no I/O — unit-tested.
 
 import { DIMENSIONS } from "./rubric";
+import type { Critique } from "./critique";
 
 export type Step =
   | "welcome" | "role" | "comfort" | "focus" | "pace" | "roadmap" | "fork"
@@ -34,6 +35,22 @@ export function initialState(): FunnelState {
 // The focus to show/use downstream: a chosen area, else the "Other" free text.
 export function effectiveFocus(s: Pick<FunnelState, "focus" | "focusOther">): string | null {
   return s.focus ?? (s.focusOther && s.focusOther.trim() ? s.focusOther.trim() : null);
+}
+
+// The active check (distinct from CheckRecord, which is the per-session history row).
+export type CurrentCheck = { task: string; paste: string; result: Critique };
+
+// Build the concepts-generator input from the active check + funnel state. Single source
+// of truth so the prefetch (findings screen) and the live call (Learn screen) send byte-
+// identical inputs — which is what lets the conceptsClient cache hit.
+export function conceptsInput(check: CurrentCheck, state: FunnelState): { task: string; output: string; weaknesses: string; focus?: string } {
+  const failed = check.result.dimensions.filter((d) => !d.pass);
+  return {
+    task: state.preflightTask?.trim() || check.task,
+    output: check.paste,
+    weaknesses: failed.map((d) => `${d.name}: ${d.note}`).join("; "),
+    focus: effectiveFocus(state) ?? undefined,
+  };
 }
 
 export const ROLE_OPTIONS: { value: Role; emoji: string }[] = [

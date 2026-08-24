@@ -1,10 +1,21 @@
 "use client";
+import { useEffect } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { judgmentMap } from "@/lib/funnel";
+import { judgmentMap, conceptsInput } from "@/lib/funnel";
+import { prefetchConcepts } from "@/lib/conceptsClient";
 import { track } from "@/lib/analytics";
 
 export default function PathAFindings() {
-  const { check, checks, go } = useFunnel();
+  const { check, checks, go, state: funnelState } = useFunnel();
+
+  // Prefetch the Learn-screen concepts now — this screen always precedes it, so the ~6s
+  // Haiku call runs while the user reads findings / does the mock review. The Learn screen
+  // then shows tailored cards immediately instead of its own thinking wait.
+  useEffect(() => {
+    if (check) prefetchConcepts(conceptsInput(check, funnelState));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [check]);
+
   if (!check) {
     // Guard: reached without a result (e.g. reload). Send back to upload.
     return (

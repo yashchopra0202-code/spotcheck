@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useFunnel } from "@/components/FunnelProvider";
-import { effectiveFocus } from "@/lib/funnel";
+import { conceptsInput } from "@/lib/funnel";
 import { runConcepts, FALLBACK_CONCEPTS, type Concept } from "@/lib/conceptsClient";
 import { track } from "@/lib/analytics";
 
@@ -16,11 +16,10 @@ export default function PathAConcepts() {
   useEffect(() => {
     if (!check) return; // no check → tailoring is already false from init
     let alive = true;
-    const failed = check.result.dimensions.filter((d) => !d.pass);
-    const weaknesses = failed.map((d) => `${d.name}: ${d.note}`).join("; ");
-    const task = state.preflightTask?.trim() || check.task;
-    track("concepts_requested", { failed: failed.length });
-    runConcepts({ task, output: check.paste, weaknesses, focus: effectiveFocus(state) ?? undefined }).then((r) => {
+    const failed = check.result.dimensions.filter((d) => !d.pass).length;
+    track("concepts_requested", { failed });
+    // Usually already prefetched on the findings screen → resolves instantly here.
+    runConcepts(conceptsInput(check, state)).then((r) => {
       if (alive) {
         setConcepts(r.concepts);
         setTailoring(false);
