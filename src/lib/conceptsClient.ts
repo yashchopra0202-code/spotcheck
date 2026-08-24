@@ -8,7 +8,10 @@ export const FALLBACK_CONCEPTS: Concepts = { concepts: CONCEPTS };
 
 export async function runConcepts(input: { task: string; output: string; weaknesses: string; focus?: string }): Promise<Concepts> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 58000);
+  // Claude Haiku returns these in ~5-8s (measured); 30s is a safety net for a
+  // hung request, well under the 60s server maxDuration. (Was 58s, sized for the
+  // old Gemini path's ~30-44s cold latency.)
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     const res = await fetch("/api/concepts", {
       method: "POST",

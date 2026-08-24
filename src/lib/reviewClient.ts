@@ -19,7 +19,10 @@ export async function runReview(input: {
   questionsAsked: number;
 }): Promise<ReviewReply> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 58000);
+  // Claude Haiku returns these in ~5-8s (measured); 30s is a safety net for a
+  // hung request, well under the 60s server maxDuration. (Was 58s, sized for the
+  // old Gemini path's ~30-44s cold latency.)
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     const res = await fetch("/api/review", {
       method: "POST",

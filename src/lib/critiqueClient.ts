@@ -1,5 +1,5 @@
-import type { Critique } from "@/lib/gemini";
-export type { Critique } from "@/lib/gemini";
+import type { Critique } from "@/lib/critique";
+export type { Critique } from "@/lib/critique";
 
 export const FALLBACK_CRITIQUE: Critique = {
   summary: "I couldn't reach your coach just now — here's the manual check to run before you trust this.",
@@ -14,7 +14,10 @@ export const FALLBACK_CRITIQUE: Critique = {
 
 export async function runCheck(input: { task: string; output: string; focus?: string }): Promise<Critique> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 58000);
+  // Claude Haiku returns these in ~5-8s (measured); 30s is a safety net for a
+  // hung request, well under the 60s server maxDuration. (Was 58s, sized for the
+  // old Gemini path's ~30-44s cold latency.)
+  const timeout = setTimeout(() => controller.abort(), 30000);
   try {
     const res = await fetch("/api/critique", {
       method: "POST",
